@@ -9,17 +9,16 @@ import android.os.Bundle
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.example.sound.databinding.ActivityMainBinding
+import com.example.sound.logic.audio.AudioService
 import java.io.IOException
 
 
 
 class MainActivity : AppCompatActivity() {
-    private val LOG_TAG = "AudioRecordTest"
     private val REQUEST_RECORD_AUDIO_PERMISSION = 200
     private lateinit var binding: ActivityMainBinding
     private var fileName: String = ""
-    private var recorder: MediaRecorder? = null
-    private var player: MediaPlayer? = null
+
 
     // Requesting permission to RECORD_AUDIO
     private var permissionToRecordAccepted = false
@@ -36,59 +35,6 @@ class MainActivity : AppCompatActivity() {
         if (!permissionToRecordAccepted) finish()
     }
 
-    private fun onRecord(start: Boolean) = if (start) {
-        startRecording()
-    } else {
-        stopRecording()
-    }
-
-    private fun onPlay(start: Boolean) = if (start) {
-        startPlaying()
-    } else {
-        stopPlaying()
-    }
-
-    private fun startPlaying() {
-        player = MediaPlayer().apply {
-            try {
-                setDataSource(fileName)
-                prepare()
-                start()
-            } catch (e: IOException) {
-                Log.e(LOG_TAG, "prepare() failed")
-            }
-        }
-    }
-
-    private fun stopPlaying() {
-        player?.release()
-        player = null
-    }
-
-    private fun startRecording() {
-        recorder = MediaRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-            setOutputFile(fileName)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-
-            try {
-                prepare()
-            } catch (e: IOException) {
-                Log.e(LOG_TAG, "prepare() failed")
-            }
-
-            start()
-        }
-    }
-
-    private fun stopRecording() {
-        recorder?.apply {
-            stop()
-            release()
-        }
-        recorder = null
-    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,12 +47,9 @@ class MainActivity : AppCompatActivity() {
         fileName = "${externalCacheDir?.absolutePath}/audiometers.3gp"
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION)
-        Log.i(LOG_TAG, "start")
         var startRecordingFlag = true
         binding.recordBtn.setOnClickListener{
-            Log.i(LOG_TAG, "record")
-
-            onRecord(startRecordingFlag)
+            AudioService.onRecord(startRecordingFlag, fileName)
             binding.recordBtn.text = when (startRecordingFlag) {
                 true -> "Stop recording"
                 false -> "Start recording"
@@ -116,7 +59,7 @@ class MainActivity : AppCompatActivity() {
 
         var startPlayingFlag = true
         binding.playBtn.setOnClickListener {
-            onPlay(startPlayingFlag)
+            AudioService.onPlay(startPlayingFlag, fileName)
             binding.playBtn.text = when (startPlayingFlag) {
                 true -> "Stop playing"
                 false -> "Start playing"
@@ -127,9 +70,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        recorder?.release()
-        recorder = null
-        player?.release()
-        player = null
+        AudioService.onStop()
     }
 }
