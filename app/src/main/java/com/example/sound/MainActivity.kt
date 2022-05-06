@@ -2,23 +2,22 @@ package com.example.sound
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.media.MediaPlayer
-import android.media.MediaRecorder
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import android.os.Environment
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import com.example.sound.databinding.ActivityMainBinding
 import com.example.sound.logic.audio.AudioService
-import java.io.IOException
-
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 class MainActivity : AppCompatActivity() {
     private val REQUEST_RECORD_AUDIO_PERMISSION = 200
     private lateinit var binding: ActivityMainBinding
-    private var fileName: String = ""
-
 
     // Requesting permission to RECORD_AUDIO
     private var permissionToRecordAccepted = false
@@ -37,6 +36,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -44,12 +44,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(recordView)
 
         // Record to the external cache directory for visibility
-        fileName = "${externalCacheDir?.absolutePath}/audiometers.3gp"
+        // fileName = "${externalCacheDir?.absolutePath}/audiometers.3gp"
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION)
         var startRecordingFlag = true
         binding.recordBtn.setOnClickListener{
-            AudioService.onRecord(startRecordingFlag, fileName)
+            AudioService.onRecord(startRecordingFlag)
             binding.recordBtn.text = when (startRecordingFlag) {
                 true -> "Stop recording"
                 false -> "Start recording"
@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
 
         var startPlayingFlag = true
         binding.playBtn.setOnClickListener {
-            AudioService.onPlay(startPlayingFlag, fileName)
+            AudioService.onPlay(startPlayingFlag)
             binding.playBtn.text = when (startPlayingFlag) {
                 true -> "Stop playing"
                 false -> "Start playing"
@@ -72,4 +72,6 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
         AudioService.onStop()
     }
+
+
 }
