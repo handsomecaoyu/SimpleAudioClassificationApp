@@ -1,77 +1,67 @@
 package com.example.sound
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Environment
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.PopupMenu
 import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
+import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavController
+import androidx.navigation.findNavController
+import androidx.navigation.ui.setupActionBarWithNavController
 import com.example.sound.databinding.ActivityMainBinding
-import com.example.sound.logic.audio.AudioService
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+
 
 
 class MainActivity : AppCompatActivity() {
-    private val REQUEST_RECORD_AUDIO_PERMISSION = 200
+    private lateinit var navController: NavController
     private lateinit var binding: ActivityMainBinding
 
-    // Requesting permission to RECORD_AUDIO
-    private var permissionToRecordAccepted = false
-    private var permissions: Array<String> = arrayOf(Manifest.permission.RECORD_AUDIO)
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
-                                            grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        permissionToRecordAccepted = if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
-            grantResults[0] == PackageManager.PERMISSION_GRANTED
-        } else {
-            false
-        }
-        if (!permissionToRecordAccepted) finish()
-    }
-
-
-
-    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
-        val recordView = binding.root
-        setContentView(recordView)
-
-        // Record to the external cache directory for visibility
-        // fileName = "${externalCacheDir?.absolutePath}/audiometers.3gp"
-
-        ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION)
-        var startRecordingFlag = true
-        binding.recordBtn.setOnClickListener{
-            AudioService.onRecord(startRecordingFlag)
-            binding.recordBtn.text = when (startRecordingFlag) {
-                true -> "Stop recording"
-                false -> "Start recording"
-            }
-            startRecordingFlag = !startRecordingFlag
-        }
-
-        var startPlayingFlag = true
-        binding.playBtn.setOnClickListener {
-            AudioService.onPlay(startPlayingFlag)
-            binding.playBtn.text = when (startPlayingFlag) {
-                true -> "Stop playing"
-                false -> "Start playing"
-            }
-            startPlayingFlag = !startPlayingFlag
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        AudioService.onStop()
+        setContentView(binding.root)
+        navController = findNavController(R.id.main_fragment)
+        setupActionBarWithNavController(navController)
+        setupSmoothBottomMenu()
     }
 
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.another_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.another_item_1 -> {
+                showToast("Another Menu Item 1 Selected")
+            }
+
+            R.id.another_item_2 -> {
+                showToast("Another Menu Item 2 Selected")
+            }
+
+            R.id.another_item_3 -> {
+                showToast("Another Menu Item 3 Selected")
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+
+    private fun showToast(msg: String) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun setupSmoothBottomMenu() {
+        val popupMenu = PopupMenu(this, null)
+        popupMenu.inflate(R.menu.menu_bottom)
+        val menu = popupMenu.menu
+        binding.bottomBar.setupWithNavController(menu, navController)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp() || super.onSupportNavigateUp()
+    }
 }
