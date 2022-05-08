@@ -35,11 +35,9 @@ object AudioDao {
             MediaStore.Audio.Media.SIZE
         )
 
-        // 查询的条件
-        val selection = null
-        val selectionArgs = null
-//        val selection = "${MediaStore.Audio.Media.OWNER_PACKAGE_NAME} = ?"
-//        val selectionArgs = arrayOf(AudioService.APP_FOLDER_NAME)
+        // 查询的条件设置为我们App的目录下的音频
+        val selection = MediaStore.Audio.Media.DATA + " like ? "
+        val selectionArgs = arrayOf("/%" + AudioService.APP_FOLDER_NAME + "/%")
         // 排序方式
         val sortOrder = "${MediaStore.Audio.Media.DATE_ADDED} DESC"
 
