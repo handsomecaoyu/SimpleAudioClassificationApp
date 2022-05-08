@@ -18,7 +18,7 @@ object AudioService {
 
     private var recorder: MediaRecorder? = null
     private var player: MediaPlayer? = null
-    private const val APP_FOLDER_NAME: String = "mySoundApp"
+    const val APP_FOLDER_NAME: String = "mySoundApp"
     private val audioPath = "${Environment.DIRECTORY_MUSIC}/$APP_FOLDER_NAME/"
     var fileName: String? = null
 

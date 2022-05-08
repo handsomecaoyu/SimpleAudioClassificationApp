@@ -78,8 +78,8 @@ class HomeFragment : Fragment() {
 
                     AudioService.onRecord(startRecordingFlag)
                     binding.recordBtn.text = when (startRecordingFlag) {
-                        true -> "Stop recording"
-                        false -> "Start recording"
+                        true -> "Stop"
+                        false -> "Start"
                     }
                     startRecordingFlag = !startRecordingFlag
 
@@ -87,8 +87,6 @@ class HomeFragment : Fragment() {
                     permReqLauncher.launch(Manifest.permission.RECORD_AUDIO)
                 }
             }
-
-
         }
 
         var startPlayingFlag = true
