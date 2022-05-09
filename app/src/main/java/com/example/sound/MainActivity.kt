@@ -1,67 +1,33 @@
 package com.example.sound
 
-import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
-import android.widget.PopupMenu
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.NavController
-import androidx.navigation.findNavController
-import androidx.navigation.ui.setupActionBarWithNavController
+import android.os.Bundle
+import androidx.viewpager.widget.ViewPager
 import com.example.sound.databinding.ActivityMainBinding
-
-
+import com.example.sound.ui.fragment.TabsAdapter
+import com.google.android.material.tabs.TabLayout
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var navController: NavController
     private lateinit var binding: ActivityMainBinding
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        navController = findNavController(R.id.main_fragment)
-        setupActionBarWithNavController(navController)
-        setupSmoothBottomMenu()
-    }
-
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.another_menu, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.another_item_1 -> {
-                showToast("Another Menu Item 1 Selected")
+        val tabLayout = binding.tabLayout
+        tabLayout.addTab(tabLayout.newTab().setText("录音").setIcon(R.drawable.ic_microphone_vector))
+        tabLayout.addTab(tabLayout.newTab().setText("音频").setIcon(R.drawable.ic_headset_vector))
+        tabLayout.tabGravity = TabLayout.GRAVITY_FILL
+        val adapter = TabsAdapter(this, supportFragmentManager, tabLayout.tabCount)
+        val viewPager = binding.viewPager
+        viewPager.adapter = adapter
+        viewPager.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                viewPager.currentItem = tab.position
             }
+            override fun onTabUnselected(tab: TabLayout.Tab) {}
+            override fun onTabReselected(tab: TabLayout.Tab) {}
+        })
 
-            R.id.another_item_2 -> {
-                showToast("Another Menu Item 2 Selected")
-            }
-
-            R.id.another_item_3 -> {
-                showToast("Another Menu Item 3 Selected")
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-
-    private fun showToast(msg: String) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-    }
-
-    private fun setupSmoothBottomMenu() {
-        val popupMenu = PopupMenu(this, null)
-        popupMenu.inflate(R.menu.menu_bottom)
-        val menu = popupMenu.menu
-        binding.bottomBar.setupWithNavController(menu, navController)
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp() || super.onSupportNavigateUp()
     }
 }

@@ -9,13 +9,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import com.example.sound.MyApplication
-import com.example.sound.R
 import com.example.sound.databinding.FragmentHomeBinding
 import com.example.sound.logic.audio.AudioService
 
@@ -23,8 +19,6 @@ import com.example.sound.logic.audio.AudioService
 class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    // Requesting permission to RECORD_AUDIO
-    private var permissionToRecordAccepted = false
     var startRecordingFlag = true
 
     override fun onCreateView(
@@ -43,19 +37,6 @@ class HomeFragment : Fragment() {
     }
 
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
-                                            grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        permissionToRecordAccepted = if (requestCode == 1) {
-            grantResults[0] == PackageManager.PERMISSION_GRANTED
-        } else {
-            false
-        }
-        if (!permissionToRecordAccepted){
-            Toast.makeText(MyApplication.context, "can't record", Toast.LENGTH_SHORT).show()
-        }
-    }
-
     private val permReqLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isgranted ->
             if (isgranted) {
@@ -72,6 +53,7 @@ class HomeFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         binding.recordBtn.setOnClickListener{
             activity?.let {
                 if (hasPermissions(activity as Context, arrayOf(Manifest.permission.RECORD_AUDIO))) {
@@ -98,6 +80,7 @@ class HomeFragment : Fragment() {
             }
             startPlayingFlag = !startPlayingFlag
         }
+
 
     }
 

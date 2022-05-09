@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sound.R
 import com.example.sound.logic.audio.Audio
@@ -19,6 +20,11 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
         val view = LayoutInflater.from(parent.context).inflate(R.layout.audio_item,
             parent, false)
         val holder = ViewHolder(view)
+        holder.audioName.setOnClickListener{
+            val position = holder.adapterPosition
+            val audio = audioList[position]
+            Toast.makeText(parent.context, audio.title, Toast.LENGTH_LONG).show()
+        }
         return holder
     }
 

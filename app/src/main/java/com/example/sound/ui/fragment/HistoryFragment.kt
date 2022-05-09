@@ -12,10 +12,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.sound.R
 import com.example.sound.databinding.FragmentHistoryBinding
-import com.example.sound.logic.audio.Audio
-import com.example.sound.logic.audio.AudioService
+
 import com.example.sound.ui.audio.AudioAdapter
 import com.example.sound.ui.audio.AudioViewModel
 
@@ -68,4 +66,5 @@ class HistoryFragment : Fragment() {
     private fun hasPermissions(context: Context, permissions: Array<String>): Boolean = permissions.all {
         ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
     }
+
 }
