@@ -1,61 +1,46 @@
 package com.example.sound.logic.audio
 
+import android.app.Service
 import android.content.ContentValues
-import android.media.MediaPlayer
+import android.content.Intent
 import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Environment
+import android.os.IBinder
 import android.provider.MediaStore
 import android.util.Log
-import android.widget.Toast
 import com.example.sound.MyApplication
+import com.example.sound.logic.MessageEvent
+import com.example.sound.logic.MessageType
+import org.greenrobot.eventbus.EventBus
 import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
-object AudioService {
-    private val LOG_TAG = "AudioRecordTest"
+// 实现跟录音相关的内容
+class RecordService : Service() {
 
+    private var amplitudeTimer = Timer()
     private var recorder: MediaRecorder? = null
-    private var player: MediaPlayer? = null
-    const val APP_FOLDER_NAME: String = "mySoundApp"
+    val APP_FOLDER_NAME: String = "mySoundApp"
     private val audioPath = "${Environment.DIRECTORY_MUSIC}/$APP_FOLDER_NAME/"
     var fileName: String? = null
+    private val LOG_TAG = "AudioRecordTest"
 
-    fun onRecord(start: Boolean) = if (start) {
+    override fun onBind(intent: Intent): IBinder {
+        TODO("Return the communication channel to the service.")
+    }
+
+    // 启动执行
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startRecording()
-    } else {
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    override fun onDestroy() {
         stopRecording()
-    }
-
-    fun onPlay(start: Boolean) = if (start) {
-        startPlaying(fileName)
-    } else {
-        stopPlaying()
-    }
-
-    fun onStop(){
-        recorder?.release()
-        recorder = null
-        player?.release()
-        player = null
-    }
-
-    private fun startPlaying(fileName: String?) {
-        player = MediaPlayer().apply {
-            try {
-                setDataSource(fileName)
-                prepare()
-                start()
-            } catch (e: IOException) {
-                Log.e(LOG_TAG, "prepare() failed")
-            }
-        }
-    }
-
-    private fun stopPlaying() {
-        player?.release()
-        player = null
+        super.onDestroy()
     }
 
     private fun startRecording(mimeType: String ="audio/mpeg") {
@@ -85,6 +70,15 @@ object AudioService {
 
             start()
         }
+
+        amplitudeTimer?.schedule(object : TimerTask() {
+            override fun run() {
+                val currentMaxAmplitude = recorder?.maxAmplitude
+                if (currentMaxAmplitude!=null) {
+                    EventBus.getDefault().post(MessageEvent(MessageType.updatemaxAmplitude).put(currentMaxAmplitude))
+                }
+            }
+        }, 0, 100)
 
     }
 
