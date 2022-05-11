@@ -12,6 +12,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.example.sound.MyApplication
+import com.example.sound.R
 import com.example.sound.databinding.FragmentHistoryBinding
 
 import com.example.sound.ui.audio.AudioAdapter
@@ -40,9 +44,21 @@ class HistoryFragment : Fragment() {
         _binding = null
     }
 
+//    private val permReqLauncher =
+//        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isgranted ->
+//            if (isgranted) {
+//                val audioList = viewModel.getAudioName()
+//                adapter = AudioAdapter(this, audioList)
+//                binding.recyclerView.adapter = adapter
+//            }
+//        }
+
     private val permReqLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isgranted ->
-            if (isgranted) {
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val granted = permissions.entries.all {
+                it.value == true
+            }
+            if (granted) {
                 val audioList = viewModel.getAudioName()
                 adapter = AudioAdapter(this, audioList)
                 binding.recyclerView.adapter = adapter
@@ -54,11 +70,21 @@ class HistoryFragment : Fragment() {
         val layoutManager = LinearLayoutManager(activity)
         binding.recyclerView.layoutManager = layoutManager
         if (hasPermissions(activity as Context, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))) {
-            val audioList = viewModel.getAudioName()
+            var audioList = viewModel.getAudioName()
             adapter = AudioAdapter(this, audioList)
             binding.recyclerView.adapter = adapter
+
+            // 下拉刷新设置
+            binding.swipeRefreshLayout.setProgressBackgroundColorSchemeColor(MyApplication.context.getColor(R.color.colorPrimary))
+            binding.swipeRefreshLayout.setColorSchemeColors(MyApplication.context.getColor(R.color.colorPrimary))
+            binding.swipeRefreshLayout.setOnRefreshListener {
+                audioList = viewModel.getAudioName()
+                adapter = AudioAdapter(this, audioList)
+                binding.recyclerView.adapter = adapter
+                binding.swipeRefreshLayout.isRefreshing = false
+            }
         } else {
-            permReqLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+            permReqLauncher.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
         }
 
     }
@@ -66,5 +92,4 @@ class HistoryFragment : Fragment() {
     private fun hasPermissions(context: Context, permissions: Array<String>): Boolean = permissions.all {
         ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
     }
-
 }
