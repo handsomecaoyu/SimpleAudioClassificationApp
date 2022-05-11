@@ -1,6 +1,7 @@
 package com.example.sound.ui.fragment
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -8,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,12 +19,10 @@ import com.example.sound.MyApplication
 import com.example.sound.databinding.FragmentHomeBinding
 import com.example.sound.logic.MessageEvent
 import com.example.sound.logic.MessageType
-import com.example.sound.logic.audio.AudioService
 import com.example.sound.logic.audio.RecordService
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.util.*
 
 
 class HomeFragment : Fragment() {
@@ -36,8 +36,7 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        val view = binding.root
-        return view
+        return binding.root
     }
 
     override fun onDestroyView() {
@@ -55,45 +54,32 @@ class HomeFragment : Fragment() {
         }
 
 
+    @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         EventBus.getDefault().register(this)
 
-
-
-        binding.recordBtn.setOnClickListener{
+        binding.audioRecordView.visibility = View.INVISIBLE
+        binding.recordBtn.setOnTouchListener { _, motionEvent ->
             activity?.let {
                 if (hasPermissions(activity as Context, arrayOf(Manifest.permission.RECORD_AUDIO))) {
-                    if (startRecordingFlag){
-                        startRecord()
-                    } else {
-                        stopRecord()
+                    when (motionEvent.action) {
+                        // 按下录音
+                        MotionEvent.ACTION_DOWN -> {
+                            startRecord()
+                        }
+                        // 松开停止录音
+                        MotionEvent.ACTION_UP -> {
+                            stopRecord()
+                        }
                     }
                 } else {
                     permReqLauncher.launch(Manifest.permission.RECORD_AUDIO)
                 }
             }
+            true
         }
-
-//        binding.recordBtn.setOnClickListener{
-//            activity?.let {
-//                if (hasPermissions(activity as Context, arrayOf(Manifest.permission.RECORD_AUDIO))) {
-//
-//                    AudioService.onRecord(startRecordingFlag)
-//                    binding.recordBtn.text = when (startRecordingFlag) {
-//                        true -> "Stop"
-//                        false -> "Start"
-//                    }
-//                    startRecordingFlag = !startRecordingFlag
-//                    binding.audioRecordView.recreate()
-//
-//                } else {
-//                    permReqLauncher.launch(Manifest.permission.RECORD_AUDIO)
-//                }
-//            }
-//        }
-
 
     }
 
@@ -108,8 +94,9 @@ class HomeFragment : Fragment() {
 
     private fun startRecord(){
         val intent = Intent(MyApplication.context, RecordService::class.java)
+        binding.audioRecordView.visibility = View.VISIBLE
         MyApplication.context.startService(intent)
-        binding.recordBtn.text = "Stop"
+        binding.recordBtn.text = "录音中"
         startRecordingFlag = false
         binding.audioRecordView.recreate()
     }
@@ -118,7 +105,8 @@ class HomeFragment : Fragment() {
         val intent = Intent(MyApplication.context, RecordService::class.java)
         MyApplication.context.stopService(intent)
         startRecordingFlag = true
-        binding.recordBtn.text = "Start"
+        binding.recordBtn.text = "录音"
+        binding.audioRecordView.visibility = View.INVISIBLE
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
