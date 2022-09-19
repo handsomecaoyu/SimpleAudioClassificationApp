@@ -49,10 +49,12 @@ class RecordService : Service() {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         val formatted = current.format(formatter)
         val displayName: String = "$formatted"
+
         contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
         contentValues.put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
         contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, audioPath)
         fileName = audioPath + displayName
+
         val uri = MyApplication.context.contentResolver.insert(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues) as Uri
         val outputFileDescriptor = MyApplication.context.contentResolver.openFileDescriptor(uri, "w")!!.fileDescriptor

@@ -58,19 +58,23 @@ object AudioService {
         player = null
     }
 
+    // 音频录制
     private fun startRecording(mimeType: String ="audio/mpeg") {
         val contentValues = ContentValues()
         val current = LocalDateTime.now()
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         val formatted = current.format(formatter)
         val displayName: String = "$formatted"
+
         contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
         contentValues.put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
         contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, audioPath)
+
         fileName = audioPath + displayName
         val uri = MyApplication.context.contentResolver.insert(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues) as Uri
         val outputFileDescriptor = MyApplication.context.contentResolver.openFileDescriptor(uri, "w")!!.fileDescriptor
+
         recorder = MediaRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
             setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)

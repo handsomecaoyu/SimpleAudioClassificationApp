@@ -28,13 +28,13 @@ import org.greenrobot.eventbus.ThreadMode
 class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    var startRecordingFlag = true
+    private var recordingFlag = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -61,27 +61,19 @@ class HomeFragment : Fragment() {
         EventBus.getDefault().register(this)
 
         binding.audioRecordView.visibility = View.INVISIBLE
-        binding.recordBtn.setOnTouchListener { _, motionEvent ->
-            activity?.let {
-                if (hasPermissions(activity as Context, arrayOf(Manifest.permission.RECORD_AUDIO))) {
-                    when (motionEvent.action) {
-                        // 按下录音
-                        MotionEvent.ACTION_DOWN -> {
-                            startRecord()
-                        }
-                        // 松开停止录音
-                        MotionEvent.ACTION_UP -> {
-                            stopRecord()
-                        }
-                    }
-                } else {
-                    permReqLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                }
+        binding.recordBtn.setOnClickListener{
+            if (hasPermissions(activity as Context, arrayOf(Manifest.permission.RECORD_AUDIO))) {
+                // 按下录音
+                if (recordingFlag) {
+                    stopRecord()
+                } else
+                    startRecord()
+            } else {
+                permReqLauncher.launch(Manifest.permission.RECORD_AUDIO)
             }
-            true
         }
-
     }
+
 
 //    override fun onStop() {
 //        super.onStop()
@@ -96,16 +88,14 @@ class HomeFragment : Fragment() {
         val intent = Intent(MyApplication.context, RecordService::class.java)
         binding.audioRecordView.visibility = View.VISIBLE
         MyApplication.context.startService(intent)
-        binding.recordBtn.text = "录音中"
-        startRecordingFlag = false
+        recordingFlag = true
         binding.audioRecordView.recreate()
     }
 
     private fun stopRecord(){
         val intent = Intent(MyApplication.context, RecordService::class.java)
         MyApplication.context.stopService(intent)
-        startRecordingFlag = true
-        binding.recordBtn.text = "录音"
+        recordingFlag = false
         binding.audioRecordView.visibility = View.INVISIBLE
     }
 

@@ -4,6 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/android/Sound/app/src/main/res/drawable/ic_dashboard_white_24dp.xml" value="0.4155" />
+        <entry key="..\:/android/Sound/app/src/main/res/drawable/ic_headset_vector.xml" value="0.2975" />
         <entry key="..\:/android/Sound/app/src/main/res/drawable/ic_launcher_background.xml" value="0.343" />
         <entry key="..\:/android/Sound/app/src/main/res/drawable/ic_microphone_vector.xml" value="0.4" />
         <entry key="..\:/android/Sound/app/src/main/res/drawable/ic_microphone_widget_icon.xml" value="0.343" />
@@ -13,7 +14,7 @@
         <entry key="..\:/android/Sound/app/src/main/res/layout/fragment_first.xml" value="0.309375" />
         <entry key="..\:/android/Sound/app/src/main/res/layout/fragment_fourth.xml" value="0.4166666666666667" />
         <entry key="..\:/android/Sound/app/src/main/res/layout/fragment_history.xml" value="0.25" />
-        <entry key="..\:/android/Sound/app/src/main/res/layout/fragment_home.xml" value="0.33" />
+        <entry key="..\:/android/Sound/app/src/main/res/layout/fragment_home.xml" value="0.25" />
         <entry key="..\:/android/Sound/app/src/main/res/layout/fragment_main.xml" value="0.4166666666666667" />
         <entry key="..\:/android/Sound/app/src/main/res/layout/fragment_second.xml" value="0.309375" />
         <entry key="..\:/android/Sound/app/src/main/res/layout/fragment_third.xml" value="0.309375" />
