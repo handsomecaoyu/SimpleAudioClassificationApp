@@ -9,13 +9,13 @@ import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import com.example.sound.MyApplication
+import com.example.sound.R
 import com.example.sound.databinding.FragmentHomeBinding
 import com.example.sound.logic.MessageEvent
 import com.example.sound.logic.MessageType
@@ -90,6 +90,7 @@ class HomeFragment : Fragment() {
         MyApplication.context.startService(intent)
         recordingFlag = true
         binding.audioRecordView.recreate()
+        binding.recordBtn.setImageResource(getRecordButtonIcon())
     }
 
     private fun stopRecord(){
@@ -97,7 +98,16 @@ class HomeFragment : Fragment() {
         MyApplication.context.stopService(intent)
         recordingFlag = false
         binding.audioRecordView.visibility = View.INVISIBLE
+        binding.recordBtn.setImageResource(getRecordButtonIcon())
     }
+
+    // 录音时显示结束图标，不录音时显示开始录音的图标
+    private fun getRecordButtonIcon() =
+        if (recordingFlag)
+            R.drawable.ic_stop_vector
+        else
+            R.drawable.ic_microphone_vector
+
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageEvent(event: MessageEvent) {

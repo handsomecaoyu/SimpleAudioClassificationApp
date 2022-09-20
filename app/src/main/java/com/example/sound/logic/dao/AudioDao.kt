@@ -1,16 +1,12 @@
 package com.example.sound.logic.dao
 
-import android.content.ContentResolver
 import android.content.ContentUris
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.provider.MediaStore
-import androidx.core.content.ContentResolverCompat.query
-import com.example.sound.MyApplication
 import com.example.sound.MyApplication.Companion.context
 import com.example.sound.logic.audio.Audio
-import com.example.sound.logic.audio.AudioService
+import com.example.sound.logic.audio.RecordService
 
 object AudioDao {
     fun getAudioName(): ArrayList<Audio>{
@@ -37,7 +33,7 @@ object AudioDao {
 
         // 查询的条件设置为我们App的目录下的音频
         val selection = MediaStore.Audio.Media.DATA + " like ? "
-        val selectionArgs = arrayOf("/%" + AudioService.APP_FOLDER_NAME + "/%")
+        val selectionArgs = arrayOf("/%" + "mySoundApp" + "/%")
         // 排序方式
         val sortOrder = "${MediaStore.Audio.Media.DATE_ADDED} DESC"
 

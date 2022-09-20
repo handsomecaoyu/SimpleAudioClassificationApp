@@ -1,7 +1,12 @@
 package com.example.sound
 
+import android.app.Activity
+import android.content.Context
+import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
+import androidx.core.view.ViewCompat
 import androidx.viewpager.widget.ViewPager
 import com.example.sound.databinding.ActivityMainBinding
 import com.example.sound.ui.fragment.TabsAdapter
@@ -11,6 +16,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 设置状态栏字体颜色，深色主题下设置为白色；浅色主题下设置为黑色
+        setAndroidNativeLightStatusBar()
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val tabLayout = binding.tabLayout
@@ -30,4 +39,16 @@ class MainActivity : AppCompatActivity() {
         })
 
     }
+
+    // 跟随深色浅色模式变化状态栏字体颜色
+    private fun Activity.setAndroidNativeLightStatusBar() {
+        val controller = ViewCompat.getWindowInsetsController(window.decorView)
+        controller?.isAppearanceLightStatusBars = !isDarkMode()
+    }
+
+    // 判断是否处于深色模式
+    private fun Context.isDarkMode(): Boolean {
+        return resources.configuration.uiMode == 0x21
+    }
+
 }

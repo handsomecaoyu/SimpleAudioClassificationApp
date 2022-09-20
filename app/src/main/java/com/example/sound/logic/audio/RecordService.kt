@@ -23,7 +23,7 @@ class RecordService : Service() {
 
     private var amplitudeTimer = Timer()
     private var recorder: MediaRecorder? = null
-    val APP_FOLDER_NAME: String = "mySoundApp"
+    private val APP_FOLDER_NAME: String = "mySoundApp"
     private val audioPath = "${Environment.DIRECTORY_MUSIC}/$APP_FOLDER_NAME/"
     var fileName: String? = null
     private val LOG_TAG = "AudioRecordTest"
@@ -80,7 +80,7 @@ class RecordService : Service() {
                     EventBus.getDefault().post(MessageEvent(MessageType.updatemaxAmplitude).put(currentMaxAmplitude))
                 }
             }
-        }, 0, 100)
+        }, 0, 75)
 
     }
 
