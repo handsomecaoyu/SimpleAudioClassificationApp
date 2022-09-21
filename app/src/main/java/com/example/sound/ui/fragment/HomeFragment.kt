@@ -1,6 +1,7 @@
 package com.example.sound.ui.fragment
 
 import android.Manifest
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -17,6 +18,9 @@ import androidx.core.app.ActivityCompat
 import com.example.sound.MyApplication
 import com.example.sound.R
 import com.example.sound.databinding.FragmentHomeBinding
+import com.example.sound.helps.PAUSE
+import com.example.sound.helps.RECORDING
+import com.example.sound.helps.START
 import com.example.sound.logic.MessageEvent
 import com.example.sound.logic.MessageType
 import com.example.sound.logic.audio.RecordService
@@ -28,7 +32,8 @@ import org.greenrobot.eventbus.ThreadMode
 class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private var recordingFlag = false
+
+    private var status = START
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -60,61 +65,105 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         EventBus.getDefault().register(this)
 
+        // 一开始隐藏取消按钮和声音波形
         binding.audioRecordView.visibility = View.INVISIBLE
+        binding.cancelBtn.visibility = View.INVISIBLE
+
+        // 设置按键动作
         binding.recordBtn.setOnClickListener{
             if (hasPermissions(activity as Context, arrayOf(Manifest.permission.RECORD_AUDIO))) {
-                // 按下录音
-                if (recordingFlag) {
-                    stopRecord()
-                } else
-                    startRecord()
+                when (status) {
+                    START -> startRecord()
+                    RECORDING -> pauseRecord()
+                    else -> stopRecord()
+                }
             } else {
                 permReqLauncher.launch(Manifest.permission.RECORD_AUDIO)
             }
         }
     }
 
-
-//    override fun onStop() {
-//        super.onStop()
-//        AudioService.onStop()
-//    }
-
+    // 判断有无权限
     private fun hasPermissions(context: Context, permissions: Array<String>): Boolean = permissions.all {
         ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun startRecord(){
+        // 计时器向上移动
+        val animator = ObjectAnimator.ofFloat(binding.durationDisplay,
+            "translationY", -300f).apply {
+            duration = 1000
+            start()
+        }
         val intent = Intent(MyApplication.context, RecordService::class.java)
         binding.audioRecordView.visibility = View.VISIBLE
         MyApplication.context.startService(intent)
-        recordingFlag = true
         binding.audioRecordView.recreate()
-        binding.recordBtn.setImageResource(getRecordButtonIcon())
+        status = RECORDING
+        buttonChange(status)
+    }
+
+    private fun pauseRecord(){
+        val intent = Intent(MyApplication.context, RecordService::class.java)
+        MyApplication.context.stopService(intent)
+        status = PAUSE
+        buttonChange(status)
     }
 
     private fun stopRecord(){
-        val intent = Intent(MyApplication.context, RecordService::class.java)
-        MyApplication.context.stopService(intent)
-        recordingFlag = false
+        // 计时器向下移动
+        val animator = ObjectAnimator.ofFloat(binding.durationDisplay,
+            "translationY", 0f).apply {
+            duration = 1000
+            start()
+        }
         binding.audioRecordView.visibility = View.INVISIBLE
-        binding.recordBtn.setImageResource(getRecordButtonIcon())
+        status = START
+        binding.durationDisplay.text = "00:00.00"
+        buttonChange(status)
     }
 
-    // 录音时显示结束图标，不录音时显示开始录音的图标
-    private fun getRecordButtonIcon() =
-        if (recordingFlag)
-            R.drawable.ic_stop_vector
-        else
-            R.drawable.ic_microphone_vector
+    private fun buttonChange(status: Int){
+        when (status){
+            START -> {
+                binding.recordBtn.setImageResource(R.drawable.ic_microphone_vector)
+                binding.recordBtn.setBackgroundResource(R.drawable.circle_background)
+                binding.cancelBtn.visibility = View.INVISIBLE
+            }
+            RECORDING -> {
+                binding.recordBtn.setImageResource(R.drawable.ic_stop_vector)
+            }
+            PAUSE -> {
+                binding.recordBtn.setImageResource(R.drawable.yes)
+                binding.recordBtn.setBackgroundResource(R.drawable.green_circle_background)
+                binding.cancelBtn.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    private fun updateDuration(duration: Int){
+        var minutes = duration / 1000 / 60
+        var seconds = duration / 1000 % 60
+        var milliseconds = duration % 1000 / 10 // 只显示2位毫秒
+        var displatTime = formatTime(minutes) + ":" + formatTime(seconds) + "." + formatTime(milliseconds)
+        binding.durationDisplay.text = displatTime
+    }
+
+    private fun formatTime(time: Int): String{
+        var timeDisplay = if (time < 10) {
+            "0$time"
+        } else{
+            "$time"
+        }
+        return timeDisplay
+    }
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageEvent(event: MessageEvent) {
         when (event.type) {
-            MessageType.updatemaxAmplitude -> {
-                binding.audioRecordView.update(event.getInt())
-            }
+            MessageType.UpdatemaxAmplitude -> binding.audioRecordView.update(event.getInt())
+            MessageType.UpdateDuration -> updateDuration(event.getInt())
         }
     }
 

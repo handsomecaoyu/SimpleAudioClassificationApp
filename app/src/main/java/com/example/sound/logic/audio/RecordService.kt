@@ -10,6 +10,8 @@ import android.os.IBinder
 import android.provider.MediaStore
 import android.util.Log
 import com.example.sound.MyApplication
+import com.example.sound.helps.APP_FOLDER_NAME
+import com.example.sound.helps.LOG_TAG
 import com.example.sound.logic.MessageEvent
 import com.example.sound.logic.MessageType
 import org.greenrobot.eventbus.EventBus
@@ -21,12 +23,13 @@ import java.util.*
 // 实现跟录音相关的内容
 class RecordService : Service() {
 
-    private var amplitudeTimer = Timer()
+    private var amplitudeTimer = Timer() // 幅值计算的定时器
+    private var durationTimer = Timer() // 录音计时器
+    private var duration = 0 // 录音时长, ms
+
     private var recorder: MediaRecorder? = null
-    private val APP_FOLDER_NAME: String = "mySoundApp"
     private val audioPath = "${Environment.DIRECTORY_MUSIC}/$APP_FOLDER_NAME/"
     var fileName: String? = null
-    private val LOG_TAG = "AudioRecordTest"
 
     override fun onBind(intent: Intent): IBinder {
         TODO("Return the communication channel to the service.")
@@ -73,22 +76,35 @@ class RecordService : Service() {
             start()
         }
 
-        amplitudeTimer?.schedule(object : TimerTask() {
+        amplitudeTimer.schedule(object : TimerTask() {
             override fun run() {
-                val currentMaxAmplitude = recorder?.maxAmplitude
+                var currentMaxAmplitude = recorder?.maxAmplitude
                 if (currentMaxAmplitude!=null) {
-                    EventBus.getDefault().post(MessageEvent(MessageType.updatemaxAmplitude).put(currentMaxAmplitude))
+                    EventBus.getDefault().post(MessageEvent(MessageType.UpdatemaxAmplitude).put(currentMaxAmplitude))
                 }
             }
-        }, 0, 75)
+        }, 0, 50)
 
+
+        durationTimer.schedule(object : TimerTask(){
+            override fun run() {
+                duration += 50
+                EventBus.getDefault().post(MessageEvent(MessageType.UpdateDuration).put(duration))
+            }
+        }, 0, 50)
     }
 
     private fun stopRecording() {
+        duration = 0
+        durationTimer.cancel()
+        amplitudeTimer.cancel()
         recorder?.apply {
             stop()
+            reset()
             release()
         }
         recorder = null
+
     }
+
 }
