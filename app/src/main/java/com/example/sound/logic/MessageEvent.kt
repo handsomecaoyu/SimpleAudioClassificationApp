@@ -1,5 +1,6 @@
 package com.example.sound.logic
 
+import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
 import java.io.Serializable
@@ -65,6 +66,8 @@ data class MessageEvent(var type: MessageType) {
         return this
     }
 
+
+
     //===============================================================
 
     fun getInt(): Int {
@@ -111,6 +114,7 @@ data class MessageEvent(var type: MessageType) {
 
 enum class MessageType {
     UpdatemaxAmplitude,
-    UpdateDuration
+    UpdateDuration,
+    RecordUri
 
 }

@@ -29,7 +29,7 @@ class RecordService : Service() {
 
     private var recorder: MediaRecorder? = null
     private val audioPath = "${Environment.DIRECTORY_MUSIC}/$APP_FOLDER_NAME/"
-    var fileName: String? = null
+    // var fileName: String? = null
 
     override fun onBind(intent: Intent): IBinder {
         TODO("Return the communication channel to the service.")
@@ -49,17 +49,21 @@ class RecordService : Service() {
     private fun startRecording(mimeType: String ="audio/mpeg") {
         val contentValues = ContentValues()
         val current = LocalDateTime.now()
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss")
         val formatted = current.format(formatter)
         val displayName: String = "$formatted"
 
         contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
         contentValues.put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
         contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, audioPath)
-        fileName = audioPath + displayName
+        // fileName = audioPath + displayName
 
         val uri = MyApplication.context.contentResolver.insert(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues) as Uri
+
+        // 传递uri
+        EventBus.getDefault().post(uri.path?.let { MessageEvent(MessageType.RecordUri).put(it) })
+
         val outputFileDescriptor = MyApplication.context.contentResolver.openFileDescriptor(uri, "w")!!.fileDescriptor
         recorder = MediaRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
@@ -76,6 +80,7 @@ class RecordService : Service() {
             start()
         }
 
+        // 录音界面的波形相关
         amplitudeTimer.schedule(object : TimerTask() {
             override fun run() {
                 var currentMaxAmplitude = recorder?.maxAmplitude
@@ -85,7 +90,7 @@ class RecordService : Service() {
             }
         }, 0, 50)
 
-
+        // 录音界面的时钟相关
         durationTimer.schedule(object : TimerTask(){
             override fun run() {
                 duration += 50

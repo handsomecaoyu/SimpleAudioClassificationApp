@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.fragment.HistoryFragment">
 
+
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"

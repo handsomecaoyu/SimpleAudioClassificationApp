@@ -44,15 +44,6 @@ class HistoryFragment : Fragment() {
         _binding = null
     }
 
-//    private val permReqLauncher =
-//        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isgranted ->
-//            if (isgranted) {
-//                val audioList = viewModel.getAudioName()
-//                adapter = AudioAdapter(this, audioList)
-//                binding.recyclerView.adapter = adapter
-//            }
-//        }
-
     private val permReqLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             val granted = permissions.entries.all {
@@ -76,7 +67,7 @@ class HistoryFragment : Fragment() {
 
             // 下拉刷新设置
             binding.swipeRefreshLayout.setProgressBackgroundColorSchemeColor(MyApplication.context.getColor(R.color.colorPrimary))
-            binding.swipeRefreshLayout.setColorSchemeColors(MyApplication.context.getColor(R.color.colorPrimary))
+            binding.swipeRefreshLayout.setColorSchemeColors(MyApplication.context.getColor(R.color.white))
             binding.swipeRefreshLayout.setOnRefreshListener {
                 audioList = viewModel.getAudioName()
                 adapter = AudioAdapter(this, audioList)
