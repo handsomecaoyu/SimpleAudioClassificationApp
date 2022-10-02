@@ -21,7 +21,8 @@ import androidx.core.app.ActivityCompat
 import com.example.sound.MyApplication
 import com.example.sound.R
 import com.example.sound.databinding.FragmentHomeBinding
-import com.example.sound.helps.PAUSE
+import com.example.sound.helps.INFERENCE
+import com.example.sound.helps.STOP
 import com.example.sound.helps.RECORDING
 import com.example.sound.helps.START
 import com.example.sound.logic.MessageEvent
@@ -70,9 +71,10 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         EventBus.getDefault().register(this)
 
-        // 一开始隐藏取消按钮和声音波形
+        // 一开始隐藏取消按钮、声音波形和识别结果
         binding.audioRecordView.visibility = View.INVISIBLE
         binding.cancelBtn.visibility = View.INVISIBLE
+        binding.resultDisplay.visibility = View.INVISIBLE
 
         // 设置录音按键动作
         binding.recordBtn.setOnClickListener{
@@ -80,7 +82,8 @@ class HomeFragment : Fragment() {
                 when (status) {
                     START -> startRecord()
                     RECORDING -> stopRecord()
-                    else -> prepareRecord()
+                    STOP -> inferenceRecord()
+                    INFERENCE -> prepareRecord()
                 }
             } else {
                 permReqLauncher.launch(Manifest.permission.RECORD_AUDIO)
@@ -101,56 +104,74 @@ class HomeFragment : Fragment() {
 
     // 开始录音
     private fun startRecord(){
-        // 计时器向上移动
-        val animator = ObjectAnimator.ofFloat(binding.durationDisplay,
-            "translationY", -300f).apply {
-            duration = 1000
-            start()
-        }
+        // 开启录音的service
         val intent = Intent(MyApplication.context, RecordService::class.java)
-        binding.audioRecordView.visibility = View.VISIBLE
         MyApplication.context.startService(intent)
-        binding.audioRecordView.recreate()
         status = RECORDING
-        buttonChange(status)
+        uiChange(status)
     }
 
     // 停止录音
     private fun stopRecord(){
         val intent = Intent(MyApplication.context, RecordService::class.java)
         MyApplication.context.stopService(intent)
-        status = PAUSE
-        buttonChange(status)
+        status = STOP
+        uiChange(status)
+    }
+
+    // 音频推理
+    private fun inferenceRecord(){
+        status = INFERENCE
+        uiChange(status)
     }
 
     // 准备下次录音
     private fun prepareRecord(){
-        // 计时器向下移动
-        val animator = ObjectAnimator.ofFloat(binding.durationDisplay,
-            "translationY", 0f).apply {
-            duration = 1000
-            start()
-        }
-        binding.audioRecordView.visibility = View.INVISIBLE
         status = START
-        binding.durationDisplay.text = "00:00.00"
-        buttonChange(status)
+        uiChange(status)
     }
 
-    private fun buttonChange(status: Int){
+    // 改变UI
+    private fun uiChange(status: Int){
         when (status){
             START -> {
+                // 计时器向下移动
+                val animator = ObjectAnimator.ofFloat(binding.durationDisplay,
+                    "translationY", 0f).apply {
+                    duration = 1000
+                    start()
+                }
+                binding.audioRecordView.visibility = View.INVISIBLE
+                binding.durationDisplay.text = "00:00.00"
+
                 binding.recordBtn.setImageResource(R.drawable.ic_microphone_vector)
-                binding.recordBtn.setBackgroundResource(R.drawable.circle_background)
-                binding.cancelBtn.visibility = View.INVISIBLE
+                binding.resultDisplay.visibility = View.INVISIBLE
             }
+
             RECORDING -> {
+                // 计时器向上移动
+                val animator = ObjectAnimator.ofFloat(binding.durationDisplay,
+                    "translationY", -300f).apply {
+                    duration = 1000
+                    start()
+                }
+                binding.audioRecordView.visibility = View.VISIBLE // 显示录音波形画面
+                binding.audioRecordView.recreate()
                 binding.recordBtn.setImageResource(R.drawable.ic_stop_vector)
             }
-            PAUSE -> {
+
+            STOP -> {
                 binding.recordBtn.setImageResource(R.drawable.yes)
                 binding.recordBtn.setBackgroundResource(R.drawable.green_circle_background)
                 binding.cancelBtn.visibility = View.VISIBLE
+            }
+
+            INFERENCE -> {
+                binding.resultDisplay.visibility = View.VISIBLE  // 显示识别结果
+                binding.cancelBtn.visibility = View.INVISIBLE
+                binding.recordBtn.setImageResource(R.drawable.next)
+                binding.recordBtn.setBackgroundResource(R.drawable.circle_background)
+
             }
         }
     }

@@ -7,4 +7,5 @@ const val LOG_TAG = "AudioRecordTest"
 // 录音状态
 const val START = 0
 const val RECORDING = 1
-const val PAUSE = 2
+const val STOP = 2
+const val INFERENCE = 3
