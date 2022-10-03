@@ -1,4 +1,4 @@
-package com.example.sound.logic.audio
+package com.example.sound.services
 
 import android.app.Service
 import android.content.ContentValues

@@ -10,7 +10,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +17,8 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.example.sound.MyApplication
 import com.example.sound.R
 import com.example.sound.databinding.FragmentHomeBinding
@@ -27,7 +28,9 @@ import com.example.sound.helps.RECORDING
 import com.example.sound.helps.START
 import com.example.sound.logic.MessageEvent
 import com.example.sound.logic.MessageType
-import com.example.sound.logic.audio.RecordService
+import com.example.sound.services.RecordService
+import com.example.sound.ui.audio.AudioAdapter
+import com.example.sound.ui.audio.AudioViewModel
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -40,6 +43,8 @@ class HomeFragment : Fragment() {
 
     private var status = START
     private var recordingPath : String? = null
+    private var audioClassResult: String = "test"
+    val viewModel by lazy { ViewModelProvider(this).get(AudioViewModel::class.java) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,15 +60,7 @@ class HomeFragment : Fragment() {
         EventBus.getDefault().unregister(this)
         _binding = null
     }
-
-    // 获取录音权限
-    private val permReqLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isgranted ->
-            if (isgranted) {
-                startRecord()
-            }
-        }
-
+    
 
     @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(Build.VERSION_CODES.S)
@@ -78,7 +75,8 @@ class HomeFragment : Fragment() {
 
         // 设置录音按键动作
         binding.recordBtn.setOnClickListener{
-            if (hasPermissions(activity as Context, arrayOf(Manifest.permission.RECORD_AUDIO))) {
+            if (hasPermissions(activity as Context, arrayOf(Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.INTERNET))) {
                 when (status) {
                     START -> startRecord()
                     RECORDING -> stopRecord()
@@ -86,7 +84,8 @@ class HomeFragment : Fragment() {
                     INFERENCE -> prepareRecord()
                 }
             } else {
-                permReqLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                permReqLauncher.launch(arrayOf(Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.INTERNET))
             }
         }
 
@@ -96,6 +95,17 @@ class HomeFragment : Fragment() {
             prepareRecord()
         }
     }
+
+    // 获取录音和联网权限
+    private val permReqLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val granted = permissions.entries.all {
+                it.value == true
+            }
+            if (granted) {
+                startRecord()
+            }
+        }
 
     // 判断有无权限
     private fun hasPermissions(context: Context, permissions: Array<String>): Boolean = permissions.all {
@@ -122,6 +132,15 @@ class HomeFragment : Fragment() {
     // 音频推理
     private fun inferenceRecord(){
         status = INFERENCE
+        viewModel.getClassificationResult("test")
+        viewModel.audioClassLiveData.observe(viewLifecycleOwner, Observer { result ->
+            val audioClass = result.getOrNull()
+            if (audioClass != null){
+                binding.resultDisplay.text = audioClass
+            } else {
+                binding.resultDisplay.text = "网络有问题，无法得到结果"
+            }
+        })
         uiChange(status)
     }
 
@@ -171,7 +190,6 @@ class HomeFragment : Fragment() {
                 binding.cancelBtn.visibility = View.INVISIBLE
                 binding.recordBtn.setImageResource(R.drawable.next)
                 binding.recordBtn.setBackgroundResource(R.drawable.circle_background)
-
             }
         }
     }
@@ -181,8 +199,8 @@ class HomeFragment : Fragment() {
         var minutes = duration / 1000 / 60
         var seconds = duration / 1000 % 60
         var milliseconds = duration % 1000 / 10 // 只显示2位毫秒
-        var displatTime = formatTime(minutes) + ":" + formatTime(seconds) + "." + formatTime(milliseconds)
-        binding.durationDisplay.text = displatTime
+        var displayTime = formatTime(minutes) + ":" + formatTime(seconds) + "." + formatTime(milliseconds)
+        binding.durationDisplay.text = displayTime
     }
 
     // 显示时间，如果只有个位，在前面补0

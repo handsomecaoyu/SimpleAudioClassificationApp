@@ -5,8 +5,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import com.example.sound.MyApplication.Companion.context
-import com.example.sound.logic.audio.Audio
-import com.example.sound.logic.audio.RecordService
+import com.example.sound.logic.model.Audio
 
 object AudioDao {
     fun getAudioName(): ArrayList<Audio>{
