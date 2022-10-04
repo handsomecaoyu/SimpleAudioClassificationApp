@@ -62,7 +62,7 @@ class RecordService : Service() {
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues) as Uri
 
         // 传递uri
-        EventBus.getDefault().post(uri.path?.let { MessageEvent(MessageType.RecordUri).put(it) })
+        EventBus.getDefault().post(uri.toString()?.let { MessageEvent(MessageType.RecordUri).put(it) })
 
         val outputFileDescriptor = MyApplication.context.contentResolver.openFileDescriptor(uri, "w")!!.fileDescriptor
         recorder = MediaRecorder().apply {
@@ -109,7 +109,6 @@ class RecordService : Service() {
             release()
         }
         recorder = null
-
     }
 
 }

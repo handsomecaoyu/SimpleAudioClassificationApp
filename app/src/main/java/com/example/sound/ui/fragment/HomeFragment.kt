@@ -42,9 +42,10 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var status = START
-    private var recordingPath : String? = null
-    private var audioClassResult: String = "test"
-    val viewModel by lazy { ViewModelProvider(this).get(AudioViewModel::class.java) }
+    private var recordingUriString : String? = null
+    private var audioClassDisplay: String = ""
+    private val viewModel by lazy { ViewModelProvider(this).get(AudioViewModel::class.java) }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -132,15 +133,15 @@ class HomeFragment : Fragment() {
     // 音频推理
     private fun inferenceRecord(){
         status = INFERENCE
-        viewModel.getClassificationResult("test")
-        viewModel.audioClassLiveData.observe(viewLifecycleOwner, Observer { result ->
-            val audioClass = result.getOrNull()
-            if (audioClass != null){
-                binding.resultDisplay.text = audioClass
-            } else {
-                binding.resultDisplay.text = "网络有问题，无法得到结果"
-            }
-        })
+        if (recordingUriString != null){
+            val recordingUri = Uri.parse(recordingUriString)
+            viewModel.getClassificationResult(recordingUri)
+            viewModel.audioClassLiveData.observe(viewLifecycleOwner, Observer { result ->
+                val audioClass = result.getOrNull()
+                audioClassDisplay = audioClass ?: "网络有问题，无法得到结果"
+            })
+        }
+
         uiChange(status)
     }
 
@@ -160,9 +161,9 @@ class HomeFragment : Fragment() {
                     duration = 1000
                     start()
                 }
+                // 隐藏波形，识别结果，重置录音时间，改变按钮形式
                 binding.audioRecordView.visibility = View.INVISIBLE
                 binding.durationDisplay.text = "00:00.00"
-
                 binding.recordBtn.setImageResource(R.drawable.ic_microphone_vector)
                 binding.resultDisplay.visibility = View.INVISIBLE
             }
@@ -174,19 +175,25 @@ class HomeFragment : Fragment() {
                     duration = 1000
                     start()
                 }
-                binding.audioRecordView.visibility = View.VISIBLE // 显示录音波形画面
+                // 显示录音波形画面
+                binding.audioRecordView.visibility = View.VISIBLE
                 binding.audioRecordView.recreate()
+                // 改变按钮形式
                 binding.recordBtn.setImageResource(R.drawable.ic_stop_vector)
             }
 
             STOP -> {
+                // 改变按钮形式
                 binding.recordBtn.setImageResource(R.drawable.yes)
                 binding.recordBtn.setBackgroundResource(R.drawable.green_circle_background)
                 binding.cancelBtn.visibility = View.VISIBLE
             }
 
             INFERENCE -> {
-                binding.resultDisplay.visibility = View.VISIBLE  // 显示识别结果
+                // 显示识别结果
+                binding.resultDisplay.visibility = View.VISIBLE
+                binding.resultDisplay.text = audioClassDisplay
+                // 改变按钮形式
                 binding.cancelBtn.visibility = View.INVISIBLE
                 binding.recordBtn.setImageResource(R.drawable.next)
                 binding.recordBtn.setBackgroundResource(R.drawable.circle_background)
@@ -219,25 +226,25 @@ class HomeFragment : Fragment() {
         when (event.type) {
             MessageType.UpdatemaxAmplitude -> binding.audioRecordView.update(event.getInt())
             MessageType.UpdateDuration -> updateDuration(event.getInt())
-            MessageType.RecordUri -> recordingPath = event.getString()
+            // MessageType.RecordUri -> recordingPath = event.getString()
+            MessageType.RecordUri -> recordingUriString = event.getString()
         }
     }
 
     // 删除录音
     private fun deleteRecording(){
-        if (recordingPath != null){
-            val file = File(recordingPath)
+        if (recordingUriString != null){
+            val recordingUri = Uri.parse(recordingUriString)
+            val file = File(recordingUri.path)
             file.delete(MyApplication.context)
         }
     }
-
-
 
 }
 
 fun File.delete(context: Context): Boolean {
     var selectionArgs = arrayOf(this.absolutePath)
-    val contentResolver = context.getContentResolver()
+    val contentResolver = context.contentResolver
     var where: String? = null
     var filesUri: Uri? = null
     if (android.os.Build.VERSION.SDK_INT >= 29) {
