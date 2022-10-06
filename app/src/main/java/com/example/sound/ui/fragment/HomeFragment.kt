@@ -136,10 +136,6 @@ class HomeFragment : Fragment() {
         if (recordingUriString != null){
             val recordingUri = Uri.parse(recordingUriString)
             viewModel.getClassificationResult(recordingUri)
-            viewModel.audioClassLiveData.observe(viewLifecycleOwner, Observer { result ->
-                val audioClass = result.getOrNull()
-                audioClassDisplay = audioClass ?: "网络有问题，无法得到结果"
-            })
         }
 
         uiChange(status)
@@ -192,7 +188,11 @@ class HomeFragment : Fragment() {
             INFERENCE -> {
                 // 显示识别结果
                 binding.resultDisplay.visibility = View.VISIBLE
-                binding.resultDisplay.text = audioClassDisplay
+                viewModel.audioClassLiveData.observe(viewLifecycleOwner, Observer { result ->
+                    val audioClass = result.getOrNull()
+                    audioClassDisplay = audioClass ?: "网络有问题，无法得到结果"
+                    binding.resultDisplay.text = audioClassDisplay
+                })
                 // 改变按钮形式
                 binding.cancelBtn.visibility = View.INVISIBLE
                 binding.recordBtn.setImageResource(R.drawable.next)

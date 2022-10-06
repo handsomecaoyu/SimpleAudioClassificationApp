@@ -1,5 +1,6 @@
 package com.example.sound.logic.dao
 
+import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.net.Uri
 import android.os.Build
@@ -10,6 +11,7 @@ import com.example.sound.logic.model.Audio
 import java.text.SimpleDateFormat
 
 object AudioDao {
+    @SuppressLint("SimpleDateFormat")
     fun getAudioInfo(): ArrayList<Audio>{
         val audios = ArrayList<Audio>()
 
@@ -37,7 +39,7 @@ object AudioDao {
         val selectionArgs = arrayOf("/%" + "mySoundApp" + "/%")
         // 排序方式
         val sortOrder = "${MediaStore.Audio.Media.DATE_ADDED} DESC"
-
+        // 建立查询
         val query = context.contentResolver.query(
             collection,
             projection,
@@ -69,16 +71,15 @@ object AudioDao {
                     id
                 )
 
-                // Stores column values and the contentUri in a local object
-                // that represents the media file.
-                audios.add(
-                    Audio(id,
+                // 添加信息
+                audios.add(Audio(
+                    id,
                     name,
                     "",
                     dateAdd,
                         // 得到的日期时间单位是秒，但是日期转换的时候要乘以1000表示位毫秒
-                    SimpleDateFormat("YYYY/MM/dd/_hh:mm:ss").format(dateAdd * 1000),
-                    duration,
+                    SimpleDateFormat("YYYY年M月d日_H点mm分ss秒").format(dateAdd * 1000),
+                    SimpleDateFormat("mm:ss").format(duration),
                     size,
                     AUDIO))
             }

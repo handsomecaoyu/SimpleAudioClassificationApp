@@ -5,14 +5,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="30dp"
-    android:layout_margin="5dp"
+    android:layout_margin="0dp"
     app:cardCornerRadius="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical"
-        android:layout_margin="5dp"
+        android:layout_margin="0dp"
         android:orientation="vertical">
 
         <TextView
@@ -26,7 +26,18 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.228" />
+            app:layout_constraintVertical_bias="1.0" />
+
+        <View
+            android:id="@+id/dateDivider"
+            android:layout_width="350dp"
+            android:layout_height="1dp"
+            android:background="?android:attr/colorPrimary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.068" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

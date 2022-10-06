@@ -1,6 +1,7 @@
 package com.example.sound.ui.audio
 
 import android.content.Intent
+import android.icu.text.SimpleDateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,17 +18,25 @@ import com.example.sound.ui.fragment.HistoryFragment
 class AudioAdapter(private val fragment: HistoryFragment, private val audioList: MutableList<Audio>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>(){
 
+    // 用于显示音频信息
     inner class AudioViewHolder(view: View) : RecyclerView.ViewHolder(view){
-        var audioTime: TextView = view.findViewById(R.id.audioTime)
+        private var audioTime: TextView = view.findViewById(R.id.audioTime)
+        private val audioDuration: TextView = view.findViewById(R.id.audioDuration)
         fun bind(audio: Audio) {
             audioTime.text = audio.dateAddedString.split('_')[1]
+            audioDuration.text = audio.duration
         }
     }
 
+    // 用于显示日期信息
     inner class DateViewHolder(view: View) : RecyclerView.ViewHolder(view){
-        val dateAdded: TextView = view.findViewById(R.id.dateAdded)
-        fun bind(audio: Audio) {
+        private val dateAdded: TextView = view.findViewById(R.id.dateAdded)
+        private val divider: View = view.findViewById(R.id.dateDivider)
+        fun bind(audio: Audio, position: Int) {
             dateAdded.text = audio.dateAddedString
+            // 隐藏第一个的分割线
+            if (position ==0)
+                divider.visibility = View.INVISIBLE
         }
     }
 
@@ -35,6 +44,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
         val inflater = LayoutInflater.from(parent.context)
         lateinit var view: View
         lateinit var holder: RecyclerView.ViewHolder
+        // 根据不同的viewType选择holder
         when (viewType) {
             AUDIO -> {
                 view = inflater.inflate(R.layout.audio_item, parent, false)
@@ -56,11 +66,12 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
         return holder
     }
 
+    // 绑定
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val audio = audioList[position]
         when (audio.itemType) {
             AUDIO -> (holder as AudioViewHolder).bind(audio)
-            DATE_ADDED -> (holder as DateViewHolder).bind(audio)
+            DATE_ADDED -> (holder as DateViewHolder).bind(audio, position)
         }
     }
 

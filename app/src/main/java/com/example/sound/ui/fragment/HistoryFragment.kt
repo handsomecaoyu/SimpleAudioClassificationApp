@@ -101,11 +101,10 @@ class HistoryFragment : Fragment() {
         var dateAddedTemp = ""
         var dateAdded = ""
         for (audio in audioList){
-            println(audio.dateAddedString)
             dateAddedTemp = audio.dateAddedString.split("_")[0]
             if (dateAdded != dateAddedTemp) {
                 dateAdded = dateAddedTemp
-                audioListWithDate.add(Audio(0, "", "", 0, dateAdded,0, 0, DATE_ADDED))
+                audioListWithDate.add(Audio(0, "", "", 0, dateAdded,"", 0, DATE_ADDED))
             }
             audioListWithDate.add(audio)
         }

@@ -10,7 +10,7 @@ data class Audio(
     val path: String,
     val dateAddedTimeStamp: Long,
     val dateAddedString: String,
-    val duration: Int,
+    val duration: String,
     val size: Int,
     val itemType: Int = AUDIO
 )
