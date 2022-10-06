@@ -20,11 +20,13 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
 
     // 用于显示音频信息
     inner class AudioViewHolder(view: View) : RecyclerView.ViewHolder(view){
-        private var audioTime: TextView = view.findViewById(R.id.audioTime)
+        private val audioTime: TextView = view.findViewById(R.id.audioTime)
         private val audioDuration: TextView = view.findViewById(R.id.audioDuration)
+        private val audioDate: TextView = view.findViewById(R.id.audioDate)
         fun bind(audio: Audio) {
             audioTime.text = audio.dateAddedString.split('_')[1]
             audioDuration.text = audio.duration
+            audioDate.text = SimpleDateFormat("YYYY/M/d").format(audio.dateAddedTimeStamp*1000)
         }
     }
 
