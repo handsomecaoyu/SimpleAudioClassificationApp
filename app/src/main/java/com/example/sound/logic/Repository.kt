@@ -13,7 +13,7 @@ import java.io.File
 
 object Repository {
     // 获得本地音频的名称
-    fun getAudioName() = AudioDao.getAudioName()
+    fun getAudioInfo() = AudioDao.getAudioInfo()
 
     // 获得音频的分类结果
     fun getAudioClassOnline(audioUri: Uri) = liveData(Dispatchers.IO){

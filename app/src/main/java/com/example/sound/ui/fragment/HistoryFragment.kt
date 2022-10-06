@@ -3,6 +3,7 @@ package com.example.sound.ui.fragment
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -17,9 +18,12 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.sound.MyApplication
 import com.example.sound.R
 import com.example.sound.databinding.FragmentHistoryBinding
+import com.example.sound.helps.DATE_ADDED
+import com.example.sound.logic.model.Audio
 
 import com.example.sound.ui.audio.AudioAdapter
 import com.example.sound.ui.audio.AudioViewModel
+import kotlin.properties.Delegates
 
 
 class HistoryFragment : Fragment() {
@@ -44,43 +48,67 @@ class HistoryFragment : Fragment() {
         _binding = null
     }
 
-    private val permReqLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            val granted = permissions.entries.all {
-                it.value == true
-            }
-            if (granted) {
-                val audioList = viewModel.getAudioName()
-                adapter = AudioAdapter(this, audioList)
-                binding.recyclerView.adapter = adapter
-            }
-        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val layoutManager = LinearLayoutManager(activity)
         binding.recyclerView.layoutManager = layoutManager
         if (hasPermissions(activity as Context, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))) {
-            var audioList = viewModel.getAudioName()
-            adapter = AudioAdapter(this, audioList)
+            // 获得包含音频信息的列表
+            var audioList = viewModel.getAudioInfo()
+            val audioListWithDate = addDateToList(audioList)
+            //adapter = AudioAdapter(this, audioList)
+            adapter = AudioAdapter(this, audioListWithDate)
             binding.recyclerView.adapter = adapter
 
             // 下拉刷新设置
             binding.swipeRefreshLayout.setProgressBackgroundColorSchemeColor(MyApplication.context.getColor(R.color.colorPrimary))
             binding.swipeRefreshLayout.setColorSchemeColors(MyApplication.context.getColor(R.color.white))
             binding.swipeRefreshLayout.setOnRefreshListener {
-                audioList = viewModel.getAudioName()
-                adapter = AudioAdapter(this, audioList)
+                var audioList = viewModel.getAudioInfo()
+                val audioListWithDate = addDateToList(audioList)
+                //adapter = AudioAdapter(this, audioList)
+                adapter = AudioAdapter(this, audioListWithDate)
                 binding.recyclerView.adapter = adapter
                 binding.swipeRefreshLayout.isRefreshing = false
             }
         } else {
-            permReqLauncher.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
+            permReqLauncher.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)) // 读取权限
         }
 
     }
 
+    // 检测有无权限
     private fun hasPermissions(context: Context, permissions: Array<String>): Boolean = permissions.all {
         ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    // 获得权限
+    private val permReqLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val granted = permissions.entries.all {
+                it.value == true
+            }
+            if (granted) {
+                val audioList = viewModel.getAudioInfo()
+                adapter = AudioAdapter(this, audioList)
+                binding.recyclerView.adapter = adapter
+            }
+        }
+
+    private fun addDateToList(audioList: List<Audio>): MutableList<Audio>{
+        var audioListWithDate: MutableList<Audio> = ArrayList()
+        var dateAddedTemp = ""
+        var dateAdded = ""
+        for (audio in audioList){
+            println(audio.dateAddedString)
+            dateAddedTemp = audio.dateAddedString.split("_")[0]
+            if (dateAdded != dateAddedTemp) {
+                dateAdded = dateAddedTemp
+                audioListWithDate.add(Audio(0, "", "", 0, dateAdded,0, 0, DATE_ADDED))
+            }
+            audioListWithDate.add(audio)
+        }
+        return audioListWithDate
     }
 }

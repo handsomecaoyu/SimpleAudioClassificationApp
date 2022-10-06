@@ -5,10 +5,12 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import com.example.sound.MyApplication.Companion.context
+import com.example.sound.helps.AUDIO
 import com.example.sound.logic.model.Audio
+import java.text.SimpleDateFormat
 
 object AudioDao {
-    fun getAudioName(): ArrayList<Audio>{
+    fun getAudioInfo(): ArrayList<Audio>{
         val audios = ArrayList<Audio>()
 
         // 获得对应的uri
@@ -58,7 +60,7 @@ object AudioDao {
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)
                 val name = cursor.getString(nameColumn)
-                val timestamp = cursor.getInt(timeAddColumn)
+                val dateAdd = cursor.getLong(timeAddColumn)
                 val duration = cursor.getInt(durationColumn)
                 val size = cursor.getInt(sizeColumn)
 
@@ -69,7 +71,16 @@ object AudioDao {
 
                 // Stores column values and the contentUri in a local object
                 // that represents the media file.
-                audios.add(Audio(id, name, "", timestamp, duration, size))
+                audios.add(
+                    Audio(id,
+                    name,
+                    "",
+                    dateAdd,
+                        // 得到的日期时间单位是秒，但是日期转换的时候要乘以1000表示位毫秒
+                    SimpleDateFormat("YYYY/MM/dd/_hh:mm:ss").format(dateAdd * 1000),
+                    duration,
+                    size,
+                    AUDIO))
             }
         }
         return audios
