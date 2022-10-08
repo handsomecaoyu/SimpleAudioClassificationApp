@@ -23,8 +23,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val tabLayout = binding.tabLayout
-        tabLayout.addTab(tabLayout.newTab().setText("录音").setIcon(R.drawable.ic_microphone_vector))
-        tabLayout.addTab(tabLayout.newTab().setText("音频").setIcon(R.drawable.ic_headset_vector))
+        tabLayout.addTab(tabLayout.newTab().setText("检测").setIcon(R.drawable.ic_microphone_vector))
+        tabLayout.addTab(tabLayout.newTab().setText("记录").setIcon(R.drawable.history))
         tabLayout.tabGravity = TabLayout.GRAVITY_FILL
         val adapter = TabsAdapter(this, supportFragmentManager, tabLayout.tabCount)
         val viewPager = binding.viewPager

@@ -1,13 +1,12 @@
 package com.example.sound.ui.audio
 
-import android.content.Intent
 import android.icu.text.SimpleDateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.sound.AudioInfo
 import com.example.sound.MyApplication
 import com.example.sound.R
 import com.example.sound.helps.AUDIO
@@ -27,6 +26,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
             audioTime.text = audio.dateAddedString.split('_')[1]
             audioDuration.text = audio.duration
             audioDate.text = SimpleDateFormat("YYYY/M/d").format(audio.dateAddedTimeStamp*1000)
+
         }
     }
 
@@ -37,8 +37,10 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
         fun bind(audio: Audio, position: Int) {
             dateAdded.text = audio.dateAddedString
             // 隐藏第一个的分割线
-            if (position ==0)
+            if (this.layoutPosition == 0) {
                 divider.visibility = View.INVISIBLE
+            } else
+                divider.visibility = View.VISIBLE
         }
     }
 

@@ -34,6 +34,7 @@
             android:layout_height="40dp"
             android:layout_marginStart="28dp"
             android:src="@drawable/play"
+            android:background="@drawable/play_button_circle_background"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.000"

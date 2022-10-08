@@ -16,15 +16,15 @@ internal class TabsAdapter(
     }
 
     override fun getItem(position: Int): Fragment {
-        when(position) {
+        return when(position) {
             0 -> {
-                return HomeFragment()
+                HomeFragment()
             }
             1 -> {
-                return HistoryFragment()
+                HistoryFragment()
             }
             else -> {
-                return HomeFragment()
+                HomeFragment()
             }
         }
     }

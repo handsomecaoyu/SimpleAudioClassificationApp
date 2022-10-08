@@ -18,4 +18,8 @@
 
     <color name="colorYes">#228B22</color>
     <color name="colorNo">#f20701</color>
+    <color name="colorPlayDark">#262626</color>
+    <color name="colorPlayLight">#F6F6F6</color>
+
+
 </resources>
