@@ -28,6 +28,8 @@ import com.example.sound.helps.RECORDING
 import com.example.sound.helps.START
 import com.example.sound.logic.MessageEvent
 import com.example.sound.logic.MessageType
+import com.example.sound.logic.dao.ClassDao
+import com.example.sound.logic.database.DbHelper
 import com.example.sound.services.RecordService
 import com.example.sound.ui.audio.AudioAdapter
 import com.example.sound.ui.audio.AudioViewModel
@@ -73,6 +75,9 @@ class HomeFragment : Fragment() {
         binding.audioRecordView.visibility = View.INVISIBLE
         binding.cancelBtn.visibility = View.INVISIBLE
         binding.resultDisplay.visibility = View.INVISIBLE
+
+        // 音频结果的数据库
+        // var classDao: ClassDao = DbHelper.getInstance().db.classDao()
 
         // 设置录音按键动作
         binding.recordBtn.setOnClickListener{
