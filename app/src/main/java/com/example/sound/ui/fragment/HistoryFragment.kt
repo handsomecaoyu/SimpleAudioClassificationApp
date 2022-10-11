@@ -3,34 +3,36 @@ package com.example.sound.ui.fragment
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.icu.text.SimpleDateFormat
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.sound.MyApplication
 import com.example.sound.R
 import com.example.sound.databinding.FragmentHistoryBinding
 import com.example.sound.helps.DATE_ADDED
+import com.example.sound.helps.HISTORY_LOG_TAG
+import com.example.sound.helps.HOME_LOG_TAG
+import com.example.sound.logic.database.DatabaseManager
 import com.example.sound.logic.model.Audio
-
 import com.example.sound.ui.audio.AudioAdapter
 import com.example.sound.ui.audio.AudioViewModel
-import kotlin.properties.Delegates
+import kotlinx.coroutines.*
 
 
 class HistoryFragment : Fragment() {
     private lateinit var adapter: AudioAdapter
     private var _binding: FragmentHistoryBinding? = null
     private val binding get() = _binding!!
-    val viewModel by lazy { ViewModelProvider(this).get(AudioViewModel::class.java) }
+    private val viewModel by lazy { ViewModelProvider(this).get(AudioViewModel::class.java) }
+    private val historyJob = Job()
+    private val historyScope = CoroutineScope(historyJob)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,8 +58,8 @@ class HistoryFragment : Fragment() {
         if (hasPermissions(activity as Context, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))) {
             // 获得包含音频信息的列表
             var audioList = viewModel.getAudioInfo()
+            audioList = addClassResult(audioList)
             val audioListWithDate = addDateToList(audioList)
-            //adapter = AudioAdapter(this, audioList)
             adapter = AudioAdapter(this, audioListWithDate)
             binding.recyclerView.adapter = adapter
 
@@ -66,8 +68,8 @@ class HistoryFragment : Fragment() {
             binding.swipeRefreshLayout.setColorSchemeColors(MyApplication.context.getColor(R.color.white))
             binding.swipeRefreshLayout.setOnRefreshListener {
                 var audioList = viewModel.getAudioInfo()
+                audioList = addClassResult(audioList)
                 val audioListWithDate = addDateToList(audioList)
-                //adapter = AudioAdapter(this, audioList)
                 adapter = AudioAdapter(this, audioListWithDate)
                 binding.recyclerView.adapter = adapter
                 binding.swipeRefreshLayout.isRefreshing = false
@@ -109,5 +111,18 @@ class HistoryFragment : Fragment() {
             audioListWithDate.add(audio)
         }
         return audioListWithDate
+    }
+
+    private fun addClassResult(audioList: ArrayList<Audio>): ArrayList<Audio>{
+        audioList.map {
+            historyScope.launch {
+                val classResultEntity = withContext(Dispatchers.IO) {
+                        DatabaseManager.db.classDao.getClassResult(it.id)
+                    }
+                if (classResultEntity.isNotEmpty())
+                    it.classResult = classResultEntity[0].audioClass
+            }
+        }
+        return audioList
     }
 }

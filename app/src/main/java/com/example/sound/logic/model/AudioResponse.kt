@@ -12,6 +12,7 @@ data class Audio(
     val dateAddedString: String,
     val duration: String,
     val size: Int,
-    val itemType: Int = AUDIO
+    val itemType: Int,
+    var classResult: String = "未录入"
 )
 

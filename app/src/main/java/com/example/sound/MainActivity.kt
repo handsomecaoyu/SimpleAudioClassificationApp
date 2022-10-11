@@ -17,6 +17,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // 清除数据库
+        // MyApplication.context.deleteDatabase("SoundData.db")
         // 设置状态栏字体颜色，深色主题下设置为白色；浅色主题下设置为黑色
         setAndroidNativeLightStatusBar()
 

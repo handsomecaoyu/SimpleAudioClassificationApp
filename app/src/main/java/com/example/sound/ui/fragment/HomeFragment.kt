@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -22,10 +23,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.sound.MyApplication
 import com.example.sound.R
 import com.example.sound.databinding.FragmentHomeBinding
-import com.example.sound.helps.INFERENCE
-import com.example.sound.helps.STOP
-import com.example.sound.helps.RECORDING
-import com.example.sound.helps.START
+import com.example.sound.helps.*
 import com.example.sound.logic.MessageEvent
 import com.example.sound.logic.MessageType
 import com.example.sound.logic.dao.ClassDao
@@ -53,10 +51,8 @@ class HomeFragment : Fragment() {
     private var audioClassDisplay: String = ""
     private val viewModel by lazy { ViewModelProvider(this).get(AudioViewModel::class.java) }
     // 协程相关
-    val homeJob = Job()
-    val homeScope = CoroutineScope(homeJob)
-
-    var myCounter = 0
+    private val homeJob = Job()
+    private val homeScope = CoroutineScope(homeJob)
 
 
     override fun onCreateView(
@@ -80,15 +76,13 @@ class HomeFragment : Fragment() {
         binding.cancelBtn.visibility = View.INVISIBLE
         binding.resultDisplay.visibility = View.INVISIBLE
 
-        // 数据库相关
-        DatabaseManager.saveApplication(MyApplication.context)
-
         // 注册音频类别的观察对象
+        // 注意这部分不能写在重复调用的地方，不然会多次注册observer
         viewModel.audioClassLiveData.observe(viewLifecycleOwner, Observer { result ->
             val audioClass = result.getOrNull()
-            audioClassDisplay = audioClass ?: "网络有问题，无法得到结果"
+            audioClassDisplay = audioClass ?: "网络异常"
             binding.resultDisplay.text = audioClassDisplay
-            // 将
+            // 将结果添加到数据库中
             recordingUriString?.let { insertClass(it, audioClassDisplay) }
         })
 
@@ -213,7 +207,6 @@ class HomeFragment : Fragment() {
             INFERENCE -> {
                 // 显示识别结果
                 binding.resultDisplay.visibility = View.VISIBLE
-
                 // 改变按钮形式
                 binding.cancelBtn.visibility = View.INVISIBLE
                 binding.recordBtn.setImageResource(R.drawable.next)
@@ -279,19 +272,15 @@ class HomeFragment : Fragment() {
         return !this.exists()
     }
 
-    fun insertClass(uriString: String, audioClass: String){
+    private fun insertClass(uriString: String, audioClass: String){
         homeScope.launch {
             // 最后一个是在Media.Audio中的主键id
-            val mediaId = uriString.split(File.separator).last().toInt()
+            val mediaId = uriString.split(File.separator).last().toLong()
             val audioClassEntity = classEntity(mediaId, audioClass)
             try {
-                val ids = DatabaseManager.db.classDao.insert(audioClassEntity)
-                println("insert number = ${ids.size}")
-                ids.map {
-                    println("insert id = $it")
-                }
+                DatabaseManager.db.classDao.insert(audioClassEntity)
             } catch (exception: Exception) {
-                println("insert error = ${exception.message}")
+                Log.e(HOME_LOG_TAG, exception.message.toString())
             }
         }
     }

@@ -11,7 +11,7 @@ import android.provider.MediaStore
 import android.util.Log
 import com.example.sound.MyApplication
 import com.example.sound.helps.APP_FOLDER_NAME
-import com.example.sound.helps.LOG_TAG
+import com.example.sound.helps.RECORD_LOG_TAG
 import com.example.sound.logic.MessageEvent
 import com.example.sound.logic.MessageType
 import org.greenrobot.eventbus.EventBus
@@ -74,7 +74,7 @@ class RecordService : Service() {
             try {
                 prepare()
             } catch (e: IOException) {
-                Log.e(LOG_TAG, "prepare() failed")
+                Log.e(RECORD_LOG_TAG, "prepare() failed")
             }
 
             start()

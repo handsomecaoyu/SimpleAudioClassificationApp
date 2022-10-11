@@ -7,11 +7,11 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "audioClass")
 data class classEntity(
     @PrimaryKey(autoGenerate = true)
-    var id: Int = 0,
-    var mediaId: Int = 0, // 在Media.Audio中的id
+    var id: Long = 0,
+    var mediaId: Long = 0, // 在Media.Audio中的id
     var audioClass: String = "",
 ){
-    constructor(mediaId: Int, audioClass: String) : this(){
+    constructor(mediaId: Long, audioClass: String) : this(){
         this.mediaId = mediaId
         this.audioClass = audioClass
     }

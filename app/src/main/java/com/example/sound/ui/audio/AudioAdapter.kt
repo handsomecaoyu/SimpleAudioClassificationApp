@@ -11,8 +11,14 @@ import com.example.sound.MyApplication
 import com.example.sound.R
 import com.example.sound.helps.AUDIO
 import com.example.sound.helps.DATE_ADDED
+import com.example.sound.logic.database.DatabaseManager
 import com.example.sound.logic.model.Audio
 import com.example.sound.ui.fragment.HistoryFragment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.coroutineContext
 
 class AudioAdapter(private val fragment: HistoryFragment, private val audioList: MutableList<Audio>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>(){
@@ -22,11 +28,12 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
         private val audioTime: TextView = view.findViewById(R.id.audioTime)
         private val audioDuration: TextView = view.findViewById(R.id.audioDuration)
         private val audioDate: TextView = view.findViewById(R.id.audioDate)
+        private val audioClass: TextView = view.findViewById(R.id.audioClass)
         fun bind(audio: Audio) {
             audioTime.text = audio.dateAddedString.split('_')[1]
             audioDuration.text = audio.duration
             audioDate.text = SimpleDateFormat("YYYY/M/d").format(audio.dateAddedTimeStamp*1000)
-
+            audioClass.text = audio.classResult
         }
     }
 
@@ -83,6 +90,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
         return audioList.size
     }
 
+    // 获得item的类型，跟onCreateViewHolder中的when (viewType)对应
     override fun getItemViewType(position: Int): Int {
         return audioList[position].itemType
     }

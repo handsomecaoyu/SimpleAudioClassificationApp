@@ -56,7 +56,7 @@
             app:layout_constraintVertical_bias="0.357" />
 
         <TextView
-            android:id="@+id/audioResult"
+            android:id="@+id/audioClass"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="208dp"

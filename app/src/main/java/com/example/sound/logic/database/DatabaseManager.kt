@@ -7,22 +7,27 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.sound.MyApplication
 import java.io.File
 
 object DatabaseManager {
+    // 目前使用绝对路径会报错
 //    var DB_PATH = Environment.getExternalStorageDirectory().absolutePath +
 //            File.separator + "mySoundApp" + File.separator+ "db" + File.separator
 //    var DB_NAME = DB_PATH + "SoundData.db"
     var DB_NAME = "SoundData.db"
 
     private val MIGRATIONS = arrayOf(Migration1)
-    private lateinit var applicationContext: Context
+    private var applicationContext = MyApplication.context
+
     val db: AppDb by lazy {
+        // 暂时不需要迁移
 //        Room.databaseBuilder(application.applicationContext, AppDb::class.java, DB_NAME)
 //            .addCallback(CreatedCallBack)
 //            .addMigrations(*MIGRATIONS)
 //            .build()
 
+        // 目前使用绝对路径会报错
 //        val dir = File(DB_PATH)
 //        if (!dir.exists()) {
 //            try {
@@ -38,9 +43,9 @@ object DatabaseManager {
             .build()
     }
 
-    fun saveApplication(applicationContext: Context) {
-        DatabaseManager.applicationContext = applicationContext
-    }
+//    fun saveApplication(applicationContext: Context) {
+//        DatabaseManager.applicationContext = applicationContext
+//    }
 
     private object CreatedCallBack : RoomDatabase.Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {

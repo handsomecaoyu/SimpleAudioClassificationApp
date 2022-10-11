@@ -2,7 +2,11 @@ package com.example.sound.helps
 
 
 const val APP_FOLDER_NAME: String = "mySoundApp"
-const val LOG_TAG = "AudioRecordTest"
+
+// 日志相关
+const val RECORD_LOG_TAG = "AudioRecord"
+const val HOME_LOG_TAG = "Home"
+const val HISTORY_LOG_TAG = "History"
 
 // 录音状态
 const val START = 0
