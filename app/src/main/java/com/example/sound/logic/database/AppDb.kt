@@ -7,5 +7,6 @@ import com.example.sound.logic.model.classEntity
 
 @Database(entities = [classEntity::class], version = 1, exportSchema = true)
 abstract class AppDb: RoomDatabase() {
-    abstract fun classDao(): ClassDao
+    val classDao: ClassDao by lazy { createClassDao() }
+    abstract fun createClassDao(): ClassDao
 }

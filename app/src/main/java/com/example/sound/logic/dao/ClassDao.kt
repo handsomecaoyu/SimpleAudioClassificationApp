@@ -9,11 +9,11 @@ import com.example.sound.logic.model.classEntity
 @Dao
 interface ClassDao{
     @Query("SELECT * FROM audioClass WHERE 'mediaId' = (:ids)")
-    fun loadClassResult(ids: IntArray): List<classEntity>
+    suspend fun loadClassResult(ids: IntArray): List<classEntity>
 
     @Insert
-    fun insert(entity: classEntity): Long
+    suspend fun insert(vararg entity: classEntity): List<Long>
 
     @Delete
-    fun delete(vararg entities: classEntity): Int
+    suspend fun delete(vararg entities: classEntity): Int
 }

@@ -29,10 +29,15 @@ import com.example.sound.helps.START
 import com.example.sound.logic.MessageEvent
 import com.example.sound.logic.MessageType
 import com.example.sound.logic.dao.ClassDao
-import com.example.sound.logic.database.DbHelper
+import com.example.sound.logic.database.DatabaseManager
+import com.example.sound.logic.model.classEntity
 import com.example.sound.services.RecordService
 import com.example.sound.ui.audio.AudioAdapter
 import com.example.sound.ui.audio.AudioViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -47,6 +52,11 @@ class HomeFragment : Fragment() {
     private var recordingUriString : String? = null
     private var audioClassDisplay: String = ""
     private val viewModel by lazy { ViewModelProvider(this).get(AudioViewModel::class.java) }
+    // 协程相关
+    val homeJob = Job()
+    val homeScope = CoroutineScope(homeJob)
+
+    var myCounter = 0
 
 
     override fun onCreateView(
@@ -58,12 +68,6 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        EventBus.getDefault().unregister(this)
-        _binding = null
-    }
-    
 
     @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(Build.VERSION_CODES.S)
@@ -76,8 +80,17 @@ class HomeFragment : Fragment() {
         binding.cancelBtn.visibility = View.INVISIBLE
         binding.resultDisplay.visibility = View.INVISIBLE
 
-        // 音频结果的数据库
-        // var classDao: ClassDao = DbHelper.getInstance().db.classDao()
+        // 数据库相关
+        DatabaseManager.saveApplication(MyApplication.context)
+
+        // 注册音频类别的观察对象
+        viewModel.audioClassLiveData.observe(viewLifecycleOwner, Observer { result ->
+            val audioClass = result.getOrNull()
+            audioClassDisplay = audioClass ?: "网络有问题，无法得到结果"
+            binding.resultDisplay.text = audioClassDisplay
+            // 将
+            recordingUriString?.let { insertClass(it, audioClassDisplay) }
+        })
 
         // 设置录音按键动作
         binding.recordBtn.setOnClickListener{
@@ -100,6 +113,13 @@ class HomeFragment : Fragment() {
             deleteRecording()
             prepareRecord()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        EventBus.getDefault().unregister(this)
+        _binding = null
+        homeJob.cancel()
     }
 
     // 获取录音和联网权限
@@ -193,11 +213,7 @@ class HomeFragment : Fragment() {
             INFERENCE -> {
                 // 显示识别结果
                 binding.resultDisplay.visibility = View.VISIBLE
-                viewModel.audioClassLiveData.observe(viewLifecycleOwner, Observer { result ->
-                    val audioClass = result.getOrNull()
-                    audioClassDisplay = audioClass ?: "网络有问题，无法得到结果"
-                    binding.resultDisplay.text = audioClassDisplay
-                })
+
                 // 改变按钮形式
                 binding.cancelBtn.visibility = View.INVISIBLE
                 binding.recordBtn.setImageResource(R.drawable.next)
@@ -208,10 +224,10 @@ class HomeFragment : Fragment() {
 
     // 显示录音时长
     private fun updateDuration(duration: Int){
-        var minutes = duration / 1000 / 60
-        var seconds = duration / 1000 % 60
-        var milliseconds = duration % 1000 / 10 // 只显示2位毫秒
-        var displayTime = formatTime(minutes) + ":" + formatTime(seconds) + "." + formatTime(milliseconds)
+        val minutes = duration / 1000 / 60
+        val seconds = duration / 1000 % 60
+        val milliseconds = duration % 1000 / 10 // 只显示2位毫秒
+        val displayTime = formatTime(minutes) + ":" + formatTime(seconds) + "." + formatTime(milliseconds)
         binding.durationDisplay.text = displayTime
     }
 
@@ -226,6 +242,7 @@ class HomeFragment : Fragment() {
     }
 
 
+    // EventBus的消息队列
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageEvent(event: MessageEvent) {
         when (event.type) {
@@ -260,6 +277,23 @@ class HomeFragment : Fragment() {
         }
         val int = contentResolver.delete(filesUri!!, where, selectionArgs)
         return !this.exists()
+    }
+
+    fun insertClass(uriString: String, audioClass: String){
+        homeScope.launch {
+            // 最后一个是在Media.Audio中的主键id
+            val mediaId = uriString.split(File.separator).last().toInt()
+            val audioClassEntity = classEntity(mediaId, audioClass)
+            try {
+                val ids = DatabaseManager.db.classDao.insert(audioClassEntity)
+                println("insert number = ${ids.size}")
+                ids.map {
+                    println("insert id = $it")
+                }
+            } catch (exception: Exception) {
+                println("insert error = ${exception.message}")
+            }
+        }
     }
 
 }
