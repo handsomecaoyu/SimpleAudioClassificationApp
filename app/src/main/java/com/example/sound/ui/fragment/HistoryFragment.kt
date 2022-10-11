@@ -31,8 +31,6 @@ class HistoryFragment : Fragment() {
     private var _binding: FragmentHistoryBinding? = null
     private val binding get() = _binding!!
     private val viewModel by lazy { ViewModelProvider(this).get(AudioViewModel::class.java) }
-    private val historyJob = Job()
-    private val historyScope = CoroutineScope(historyJob)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -98,6 +96,7 @@ class HistoryFragment : Fragment() {
             }
         }
 
+    // 向音频列表中添加音频信息
     private fun addDateToList(audioList: List<Audio>): MutableList<Audio>{
         var audioListWithDate: MutableList<Audio> = ArrayList()
         var dateAddedTemp = ""
@@ -113,16 +112,10 @@ class HistoryFragment : Fragment() {
         return audioListWithDate
     }
 
+    // 向音频列表添加分类结果
     private fun addClassResult(audioList: ArrayList<Audio>): ArrayList<Audio>{
-        audioList.map {
-            historyScope.launch {
-                val classResultEntity = withContext(Dispatchers.IO) {
-                        DatabaseManager.db.classDao.getClassResult(it.id)
-                    }
-                if (classResultEntity.isNotEmpty())
-                    it.classResult = classResultEntity[0].audioClass
-            }
-        }
+        for (audio in audioList)
+            audio.classResult = viewModel.getAudioClassFromDB(audio.id)
         return audioList
     }
 }

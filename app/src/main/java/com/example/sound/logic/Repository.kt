@@ -6,6 +6,8 @@ import androidx.core.net.toFile
 import androidx.lifecycle.liveData
 import com.example.sound.MyApplication
 import com.example.sound.logic.dao.AudioDao
+import com.example.sound.logic.database.DatabaseManager
+import com.example.sound.logic.model.classEntity
 import com.example.sound.logic.network.AudioClassNetwork
 import com.example.sound.utils.URIPathHelper
 import kotlinx.coroutines.Dispatchers
@@ -33,4 +35,8 @@ object Repository {
         }
         emit(result)
     }
+
+    // 从本地查询音频的分类
+    suspend fun getAudioClassFromDB(id: Long): List<classEntity> =
+        DatabaseManager.db.classDao.getClassResult(id)
 }
