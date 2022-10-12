@@ -1,5 +1,6 @@
 package com.example.sound.ui.audio
 
+import android.annotation.SuppressLint
 import android.icu.text.SimpleDateFormat
 import android.view.LayoutInflater
 import android.view.View
@@ -22,22 +23,50 @@ import kotlin.coroutines.coroutineContext
 class AudioAdapter(private val fragment: HistoryFragment, private val audioList: MutableList<Audio>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>(){
 
+    // 是否被选中的集合
+    var multiSeletedSet = mutableSetOf<Int>()
+    var isMultiSelecting = false
+
     // 用于显示音频信息
     inner class AudioViewHolder(view: View) : RecyclerView.ViewHolder(view){
-        private val audioTime: TextView = view.findViewById(R.id.audioTime)
-        private val audioDuration: TextView = view.findViewById(R.id.audioDuration)
-        private val audioDate: TextView = view.findViewById(R.id.audioDate)
-        private val audioClass: TextView = view.findViewById(R.id.audioClass)
-        fun bind(audio: Audio) {
+        private val audioTime: TextView = view.findViewById(R.id.audioTime)  // 音频录制的时间，时分秒
+        private val audioDuration: TextView = view.findViewById(R.id.audioDuration)  // 时长
+        private val audioDate: TextView = view.findViewById(R.id.audioDate)  // 音频录制的日期
+        private val audioClass: TextView = view.findViewById(R.id.audioClass)  // 结果类型
+        @SuppressLint("UseCompatLoadingForDrawables")
+        fun bind(audio: Audio, position: Int) {
+            // 在卡片中显示各种信息
             audioTime.text = audio.dateAddedString.split('_')[1]
             audioDuration.text = audio.duration
             audioDate.text = SimpleDateFormat("YYYY/M/d").format(audio.dateAddedTimeStamp*1000)
+            // 根据不同的情况等级显示不同的颜色
             when (audio.classResponse.level) {
                 NORMAL -> audioClass.background = MyApplication.context.getDrawable(R.drawable.green_textview)
                 WARNING -> audioClass.background = MyApplication.context.getDrawable(R.drawable.orange_textview)
                 ABNORMAL -> audioClass.background = MyApplication.context.getDrawable(R.drawable.red_textview)
             }
             audioClass.text = audio.classResponse.result
+
+            // 多选和单选时间的设置
+            var isSelected = multiSeletedSet.contains(position)
+            // 长按进入多选模式
+            this.itemView.setOnLongClickListener{
+                isMultiSelecting = true
+                multiSeletedSet.add(position)
+                isSelected = true
+                true
+            }
+
+            // 设置单选
+            this.itemView.setOnClickListener {
+                // 在多选模式下
+                if (isMultiSelecting){
+                    if (multiSeletedSet.contains(position)) {
+                        multiSeletedSet.remove(position)
+                    }
+                }
+
+            }
         }
     }
 
@@ -85,7 +114,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val audio = audioList[position]
         when (audio.itemType) {
-            AUDIO -> (holder as AudioViewHolder).bind(audio)
+            AUDIO -> (holder as AudioViewHolder).bind(audio, position)
             DATE_ADDED -> (holder as DateViewHolder).bind(audio, position)
         }
     }
