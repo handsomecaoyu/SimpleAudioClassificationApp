@@ -26,16 +26,14 @@ import com.example.sound.databinding.FragmentHomeBinding
 import com.example.sound.helps.*
 import com.example.sound.logic.MessageEvent
 import com.example.sound.logic.MessageType
-import com.example.sound.logic.dao.ClassDao
 import com.example.sound.logic.database.DatabaseManager
-import com.example.sound.logic.model.classEntity
+import com.example.sound.logic.model.ClassEntity
+import com.example.sound.logic.model.ClassResponse
 import com.example.sound.services.RecordService
-import com.example.sound.ui.audio.AudioAdapter
 import com.example.sound.ui.audio.AudioViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -80,10 +78,16 @@ class HomeFragment : Fragment() {
         // 注意这部分不能写在重复调用的地方，不然会多次注册observer
         viewModel.audioClassLiveData.observe(viewLifecycleOwner, Observer { result ->
             val audioClass = result.getOrNull()
-            audioClassDisplay = audioClass ?: "网络异常"
+            if (audioClass != null){
+                audioClassDisplay = audioClass.result
+                // 将结果添加到数据库中
+                recordingUriString?.let { insertClass(it, audioClass) }
+            } else {
+                val emptyClassResponse = ClassResponse(result="网络异常")
+                audioClassDisplay = emptyClassResponse.result
+                recordingUriString?.let { insertClass(it, emptyClassResponse) }
+            }
             binding.resultDisplay.text = audioClassDisplay
-            // 将结果添加到数据库中
-            recordingUriString?.let { insertClass(it, audioClassDisplay) }
         })
 
         // 设置录音按键动作
@@ -156,7 +160,6 @@ class HomeFragment : Fragment() {
             val recordingUri = Uri.parse(recordingUriString)
             viewModel.getClassificationResult(recordingUri)
         }
-
         uiChange(status)
     }
 
@@ -272,11 +275,11 @@ class HomeFragment : Fragment() {
         return !this.exists()
     }
 
-    private fun insertClass(uriString: String, audioClass: String){
+    private fun insertClass(uriString: String, classResponse: ClassResponse){
         homeScope.launch {
             // 最后一个是在Media.Audio中的主键id
             val mediaId = uriString.split(File.separator).last().toLong()
-            val audioClassEntity = classEntity(mediaId, audioClass)
+            val audioClassEntity = ClassEntity(mediaId, classResponse)
             try {
                 DatabaseManager.db.classDao.insert(audioClassEntity)
             } catch (exception: Exception) {

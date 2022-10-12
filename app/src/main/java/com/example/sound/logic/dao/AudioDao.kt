@@ -6,7 +6,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import com.example.sound.MyApplication.Companion.context
-import com.example.sound.helps.AUDIO
 import com.example.sound.logic.model.Audio
 import java.text.SimpleDateFormat
 
@@ -80,8 +79,7 @@ object AudioDao {
                         // 得到的日期时间单位是秒，但是日期转换的时候要乘以1000表示位毫秒
                     SimpleDateFormat("YYYY年M月d日_H点mm分ss秒").format(dateAdd * 1000),
                     SimpleDateFormat("mm:ss").format(duration),
-                    size,
-                    AUDIO))
+                    size))
             }
         }
         return audios

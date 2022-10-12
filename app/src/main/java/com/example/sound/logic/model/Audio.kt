@@ -1,5 +1,7 @@
 package com.example.sound.logic.model
 
+import com.example.sound.helps.AUDIO
+
 data class Audio(
     val id: Long,
     val title: String,
@@ -8,7 +10,7 @@ data class Audio(
     val dateAddedString: String,
     val duration: String,
     val size: Int,
-    val itemType: Int,
-    var classResult: String = "未录入"
+    val itemType: Int = AUDIO,
+    var classResponse: ClassResponse = ClassResponse()
 )
 

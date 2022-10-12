@@ -1,3 +1,9 @@
 package com.example.sound.logic.model
 
-data class ClassResponse(val status: String, val result: String)
+import com.example.sound.helps.WARNING
+
+data class ClassResponse(
+    val status: String = "",
+    val result: String = "",
+    val level: Int = WARNING
+)

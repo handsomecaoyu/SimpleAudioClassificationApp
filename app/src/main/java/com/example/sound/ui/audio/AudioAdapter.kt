@@ -9,8 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sound.MyApplication
 import com.example.sound.R
-import com.example.sound.helps.AUDIO
-import com.example.sound.helps.DATE_ADDED
+import com.example.sound.helps.*
 import com.example.sound.logic.database.DatabaseManager
 import com.example.sound.logic.model.Audio
 import com.example.sound.ui.fragment.HistoryFragment
@@ -33,7 +32,12 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
             audioTime.text = audio.dateAddedString.split('_')[1]
             audioDuration.text = audio.duration
             audioDate.text = SimpleDateFormat("YYYY/M/d").format(audio.dateAddedTimeStamp*1000)
-            audioClass.text = audio.classResult
+            when (audio.classResponse.level) {
+                NORMAL -> audioClass.background = MyApplication.context.getDrawable(R.drawable.green_textview)
+                WARNING -> audioClass.background = MyApplication.context.getDrawable(R.drawable.orange_textview)
+                ABNORMAL -> audioClass.background = MyApplication.context.getDrawable(R.drawable.red_textview)
+            }
+            audioClass.text = audio.classResponse.result
         }
     }
 

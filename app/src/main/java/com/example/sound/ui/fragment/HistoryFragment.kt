@@ -115,7 +115,7 @@ class HistoryFragment : Fragment() {
     // 向音频列表添加分类结果
     private fun addClassResult(audioList: ArrayList<Audio>): ArrayList<Audio>{
         for (audio in audioList)
-            audio.classResult = viewModel.getAudioClassFromDB(audio.id)
+            audio.classResponse = viewModel.getAudioClassFromDB(audio.id)
         return audioList
     }
 }

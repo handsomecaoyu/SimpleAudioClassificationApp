@@ -21,5 +21,9 @@
     <color name="colorPlayDark">#262626</color>
     <color name="colorPlayLight">#F6F6F6</color>
 
+    <color name="green">#228B22</color>
+    <color name="red">#f20701</color>
+    <color name="orange">#EFA732</color>
+
 
 </resources>

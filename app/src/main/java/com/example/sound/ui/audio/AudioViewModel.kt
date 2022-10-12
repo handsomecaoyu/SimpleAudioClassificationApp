@@ -6,6 +6,7 @@ import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import com.example.sound.logic.Repository
 import com.example.sound.logic.database.DatabaseManager
+import com.example.sound.logic.model.ClassResponse
 import kotlinx.coroutines.*
 import java.io.File
 
@@ -26,17 +27,20 @@ class AudioViewModel : ViewModel(){
     }
 
     // 从本地数据库获得音频的分类
-    fun getAudioClassFromDB(id: Long): String {
+    fun getAudioClassFromDB(id: Long): ClassResponse {
         return runBlocking {
-            val classResultEntity = withContext(Dispatchers.IO) {
+            val classResultEntities = withContext(Dispatchers.IO) {
                 Repository.getAudioClassFromDB(id)
             }
-            if (classResultEntity.isNotEmpty())
-                classResultEntity[0].audioClass
+            if (classResultEntities.isNotEmpty()){
+                val classResultEntity = classResultEntities[0]
+                classResultEntity.let { ClassResponse(it.status, it.audioClass, it.level) }
+            }
             else
-                "未录入"
+                ClassResponse(result="未录入")
         }
     }
+
 
     override fun onCleared() {
         viewJob.cancel()

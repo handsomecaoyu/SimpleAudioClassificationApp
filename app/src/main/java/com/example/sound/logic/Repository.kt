@@ -2,12 +2,11 @@ package com.example.sound.logic
 
 import android.net.Uri
 import android.util.Log
-import androidx.core.net.toFile
 import androidx.lifecycle.liveData
 import com.example.sound.MyApplication
 import com.example.sound.logic.dao.AudioDao
 import com.example.sound.logic.database.DatabaseManager
-import com.example.sound.logic.model.classEntity
+import com.example.sound.logic.model.ClassEntity
 import com.example.sound.logic.network.AudioClassNetwork
 import com.example.sound.utils.URIPathHelper
 import kotlinx.coroutines.Dispatchers
@@ -24,8 +23,7 @@ object Repository {
             val audioFile = File(uriPathHelper.getPath(MyApplication.context, audioUri))
             val classResponse = AudioClassNetwork.getAudioClassOnline(audioFile)
             if (classResponse.status == "ok"){
-                val audioClassResult = classResponse.result
-                Result.success(audioClassResult)
+                Result.success(classResponse)
             } else{
                 Result.failure(RuntimeException("response status is ${classResponse.status}"))
             }
@@ -37,6 +35,6 @@ object Repository {
     }
 
     // 从本地查询音频的分类
-    suspend fun getAudioClassFromDB(id: Long): List<classEntity> =
+    suspend fun getAudioClassFromDB(id: Long): List<ClassEntity> =
         DatabaseManager.db.classDao.getClassResult(id)
 }
