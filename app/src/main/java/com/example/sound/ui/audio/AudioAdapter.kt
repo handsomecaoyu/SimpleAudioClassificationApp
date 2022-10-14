@@ -2,34 +2,32 @@ package com.example.sound.ui.audio
 
 import android.annotation.SuppressLint
 import android.icu.text.SimpleDateFormat
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sound.MyApplication
 import com.example.sound.R
 import com.example.sound.helps.*
 import com.example.sound.logic.MessageEvent
 import com.example.sound.logic.MessageType
-import com.example.sound.logic.database.DatabaseManager
 import com.example.sound.logic.model.Audio
 import com.example.sound.ui.fragment.HistoryFragment
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
-import kotlin.coroutines.coroutineContext
 
 class AudioAdapter(private val fragment: HistoryFragment, private val audioList: MutableList<Audio>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>(){
 
     // 是否被选中的集合
-    var multiSeletedSet = mutableSetOf<Int>()
+    var multiSelectedSet = mutableSetOf<Int>()
     var isMultiSelecting = false
-    lateinit var bottomSheet: View
+    val cancelMultiSelectionLiveData = MutableLiveData<Boolean>()
 
     // 用于显示音频信息
     inner class AudioViewHolder(view: View) : RecyclerView.ViewHolder(view){
@@ -38,6 +36,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
         private val audioDate: TextView = view.findViewById(R.id.audioDate)  // 音频录制的日期
         private val audioClass: TextView = view.findViewById(R.id.audioClass)  // 结果类型
         private val audioIcon: ImageView = view.findViewById(R.id.audioIcon)
+        private val viewLifecycleOwner = view.context as LifecycleOwner
         @SuppressLint("UseCompatLoadingForDrawables", "SimpleDateFormat")
         fun bind(audio: Audio, position: Int) {
             // 在卡片中显示各种信息
@@ -55,8 +54,9 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
             // 长按进入多选模式
             this.itemView.setOnLongClickListener{
                 isMultiSelecting = true
-                EventBus.getDefault().post(MessageEvent(MessageType.MultiSelectedStatus).put(isMultiSelecting))
-                multiSeletedSet.add(position)
+                cancelMultiSelectionLiveData.value = false
+                EventBus.getDefault().post(MessageEvent(MessageType.AudioItemLongPressed).put(isMultiSelecting))
+                multiSelectedSet.add(position)
                 audioIcon.setImageResource(R.drawable.selected)
                 true
             }
@@ -66,18 +66,24 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
                 // 在多选模式下
                 if (isMultiSelecting){
                     // 如果已经选中，取消选中
-                    if (multiSeletedSet.contains(position)) {
-                        multiSeletedSet.remove(position)
+                    if (multiSelectedSet.contains(position)) {
+                        multiSelectedSet.remove(position)
                         audioIcon.setImageResource(R.drawable.play)
                     }
                     // 还未选中，则选中
                     else {
-                        multiSeletedSet.add(position)
+                        multiSelectedSet.add(position)
                         audioIcon.setImageResource(R.drawable.selected)
                     }
                 }
-
             }
+
+            cancelMultiSelectionLiveData.observe(viewLifecycleOwner, Observer {
+                if (it){
+                    multiSelectedSet.remove(position)
+                    audioIcon.setImageResource(R.drawable.play)
+                }
+            })
 
         }
     }
@@ -139,5 +145,10 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
     // 获得item的类型，跟onCreateViewHolder中的when (viewType)对应
     override fun getItemViewType(position: Int): Int {
         return audioList[position].itemType
+    }
+
+    fun cancelMultiSelection(){
+        isMultiSelecting = false
+        cancelMultiSelectionLiveData.value = true
     }
 }

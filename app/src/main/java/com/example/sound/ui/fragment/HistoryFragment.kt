@@ -31,6 +31,7 @@ class HistoryFragment : Fragment() {
     private var _binding: FragmentHistoryBinding? = null
     private val binding get() = _binding!!
     private val viewModel by lazy { ViewModelProvider(this).get(AudioViewModel::class.java) }
+    private lateinit var audioListWithDate: MutableList<Audio>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,6 +52,7 @@ class HistoryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         // 注册EventBus，这是一个事件总线，用于不同组件之间方便通信
         EventBus.getDefault().register(this)
 
@@ -62,12 +64,15 @@ class HistoryFragment : Fragment() {
             // 获得包含音频信息的列表
             var audioList = viewModel.getAudioInfo()
             audioList = addClassResult(audioList)
-            val audioListWithDate = addDateToList(audioList)
+            audioListWithDate = addDateToList(audioList)
             adapter = AudioAdapter(this, audioListWithDate)
             binding.recyclerView.adapter = adapter
 
-            // 隐藏多选页面
+            // 隐藏多选时的工作栏
             binding.multiSelectedMenu.visibility = View.INVISIBLE
+            binding.selectedCancel.setOnClickListener {
+                multiSelectedMenuChange(false)
+            }
 
             // 下拉刷新设置
             binding.swipeRefreshLayout.setProgressBackgroundColorSchemeColor(MyApplication.context.getColor(R.color.colorPrimary))
@@ -75,7 +80,7 @@ class HistoryFragment : Fragment() {
             binding.swipeRefreshLayout.setOnRefreshListener {
                 var audioList = viewModel.getAudioInfo()
                 audioList = addClassResult(audioList)
-                val audioListWithDate = addDateToList(audioList)
+                audioListWithDate = addDateToList(audioList)
                 adapter = AudioAdapter(this, audioListWithDate)
                 binding.recyclerView.adapter = adapter
                 binding.swipeRefreshLayout.isRefreshing = false
@@ -131,9 +136,16 @@ class HistoryFragment : Fragment() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageEvent(event: MessageEvent) {
         when (event.type) {
-            MessageType.MultiSelectedStatus -> {
-                binding.multiSelectedMenu.visibility = View.VISIBLE
-            }
+            MessageType.AudioItemLongPressed -> multiSelectedMenuChange(event.getBoolean())
+        }
+    }
+
+    private fun multiSelectedMenuChange(isMultiSelecting: Boolean){
+        if (isMultiSelecting) {
+            binding.multiSelectedMenu.visibility = View.VISIBLE
+        } else {
+            binding.multiSelectedMenu.visibility = View.INVISIBLE
+            adapter.cancelMultiSelection()
         }
     }
 }
