@@ -24,6 +24,7 @@
     <color name="green">#228B22</color>
     <color name="red">#f20701</color>
     <color name="orange">#EFA732</color>
-
+    <color name="colorSelectedMenu">#FFFFFFFF</color>
+    <color name="colorPure">#FFFFFFFF</color>
 
 </resources>

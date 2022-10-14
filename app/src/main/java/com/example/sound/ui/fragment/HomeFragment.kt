@@ -67,6 +67,7 @@ class HomeFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // 注册EventBus，这是一个事件总线，用于不同组件之间方便通信
         EventBus.getDefault().register(this)
 
         // 一开始隐藏取消按钮、声音波形和识别结果

@@ -115,6 +115,6 @@ data class MessageEvent(var type: MessageType) {
 enum class MessageType {
     UpdatemaxAmplitude,
     UpdateDuration,
-    RecordUri
-
+    RecordUri,
+    MultiSelectedStatus
 }

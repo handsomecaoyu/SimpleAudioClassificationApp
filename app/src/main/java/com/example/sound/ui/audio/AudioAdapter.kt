@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.sound.MyApplication
 import com.example.sound.R
 import com.example.sound.helps.*
+import com.example.sound.logic.MessageEvent
+import com.example.sound.logic.MessageType
 import com.example.sound.logic.database.DatabaseManager
 import com.example.sound.logic.model.Audio
 import com.example.sound.ui.fragment.HistoryFragment
@@ -18,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.greenrobot.eventbus.EventBus
 import kotlin.coroutines.coroutineContext
 
 class AudioAdapter(private val fragment: HistoryFragment, private val audioList: MutableList<Audio>) :
@@ -26,6 +29,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
     // 是否被选中的集合
     var multiSeletedSet = mutableSetOf<Int>()
     var isMultiSelecting = false
+    lateinit var bottomSheet: View
 
     // 用于显示音频信息
     inner class AudioViewHolder(view: View) : RecyclerView.ViewHolder(view){
@@ -33,7 +37,8 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
         private val audioDuration: TextView = view.findViewById(R.id.audioDuration)  // 时长
         private val audioDate: TextView = view.findViewById(R.id.audioDate)  // 音频录制的日期
         private val audioClass: TextView = view.findViewById(R.id.audioClass)  // 结果类型
-        @SuppressLint("UseCompatLoadingForDrawables")
+        private val audioIcon: ImageView = view.findViewById(R.id.audioIcon)
+        @SuppressLint("UseCompatLoadingForDrawables", "SimpleDateFormat")
         fun bind(audio: Audio, position: Int) {
             // 在卡片中显示各种信息
             audioTime.text = audio.dateAddedString.split('_')[1]
@@ -47,13 +52,12 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
             }
             audioClass.text = audio.classResponse.result
 
-            // 多选和单选时间的设置
-            var isSelected = multiSeletedSet.contains(position)
             // 长按进入多选模式
             this.itemView.setOnLongClickListener{
                 isMultiSelecting = true
+                EventBus.getDefault().post(MessageEvent(MessageType.MultiSelectedStatus).put(isMultiSelecting))
                 multiSeletedSet.add(position)
-                isSelected = true
+                audioIcon.setImageResource(R.drawable.selected)
                 true
             }
 
@@ -61,12 +65,20 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
             this.itemView.setOnClickListener {
                 // 在多选模式下
                 if (isMultiSelecting){
+                    // 如果已经选中，取消选中
                     if (multiSeletedSet.contains(position)) {
                         multiSeletedSet.remove(position)
+                        audioIcon.setImageResource(R.drawable.play)
+                    }
+                    // 还未选中，则选中
+                    else {
+                        multiSeletedSet.add(position)
+                        audioIcon.setImageResource(R.drawable.selected)
                     }
                 }
 
             }
+
         }
     }
 
@@ -88,6 +100,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
         val inflater = LayoutInflater.from(parent.context)
         lateinit var view: View
         lateinit var holder: RecyclerView.ViewHolder
+
         // 根据不同的viewType选择holder
         when (viewType) {
             AUDIO -> {

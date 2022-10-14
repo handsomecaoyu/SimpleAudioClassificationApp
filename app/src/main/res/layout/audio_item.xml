@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    app:cardBackgroundColor="@color/colorPure"
     android:layout_width="match_parent"
     android:layout_height="75dp"
     android:layout_margin="0dp"
@@ -29,7 +30,7 @@
             app:layout_constraintVertical_bias="0.137" />
 
         <ImageView
-            android:id="@+id/playButton"
+            android:id="@+id/audioIcon"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginStart="28dp"
@@ -51,7 +52,7 @@
             android:textSize="15sp"
             android:typeface="monospace"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/playButton"
+            app:layout_constraintStart_toEndOf="@+id/audioIcon"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.357" />
 
@@ -78,7 +79,7 @@
             android:typeface="monospace"
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/playButton"
+            app:layout_constraintStart_toEndOf="@+id/audioIcon"
             app:layout_constraintTop_toBottomOf="@+id/audioTime"
             app:layout_constraintVertical_bias="0.137" />
 

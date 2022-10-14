@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,13 +16,14 @@ import com.example.sound.MyApplication
 import com.example.sound.R
 import com.example.sound.databinding.FragmentHistoryBinding
 import com.example.sound.helps.DATE_ADDED
-import com.example.sound.helps.HISTORY_LOG_TAG
-import com.example.sound.helps.HOME_LOG_TAG
-import com.example.sound.logic.database.DatabaseManager
+import com.example.sound.logic.MessageEvent
+import com.example.sound.logic.MessageType
 import com.example.sound.logic.model.Audio
 import com.example.sound.ui.audio.AudioAdapter
 import com.example.sound.ui.audio.AudioViewModel
-import kotlinx.coroutines.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 
 class HistoryFragment : Fragment() {
@@ -39,20 +39,25 @@ class HistoryFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         _binding = FragmentHistoryBinding.inflate(inflater, container, false)
-        val view = binding.root
-        return view
+        return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        EventBus.getDefault().unregister(this)
         _binding = null
     }
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // 注册EventBus，这是一个事件总线，用于不同组件之间方便通信
+        EventBus.getDefault().register(this)
+
+        // 绑定视图
         val layoutManager = LinearLayoutManager(activity)
         binding.recyclerView.layoutManager = layoutManager
+
         if (hasPermissions(activity as Context, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))) {
             // 获得包含音频信息的列表
             var audioList = viewModel.getAudioInfo()
@@ -60,6 +65,9 @@ class HistoryFragment : Fragment() {
             val audioListWithDate = addDateToList(audioList)
             adapter = AudioAdapter(this, audioListWithDate)
             binding.recyclerView.adapter = adapter
+
+            // 隐藏多选页面
+            binding.multiSelectedMenu.visibility = View.INVISIBLE
 
             // 下拉刷新设置
             binding.swipeRefreshLayout.setProgressBackgroundColorSchemeColor(MyApplication.context.getColor(R.color.colorPrimary))
@@ -117,5 +125,15 @@ class HistoryFragment : Fragment() {
         for (audio in audioList)
             audio.classResponse = viewModel.getAudioClassFromDB(audio.id)
         return audioList
+    }
+
+    // EventBus的消息队列
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMessageEvent(event: MessageEvent) {
+        when (event.type) {
+            MessageType.MultiSelectedStatus -> {
+                binding.multiSelectedMenu.visibility = View.VISIBLE
+            }
+        }
     }
 }
