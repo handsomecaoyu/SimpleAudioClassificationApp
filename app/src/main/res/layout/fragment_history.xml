@@ -31,18 +31,73 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <TextView
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/selectedCancel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="取消选择"
-                android:textColor="?android:attr/textColorPrimary"
-                android:layout_marginEnd="20dp"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintHorizontal_bias="0.6">
+                <ImageView
+                    android:id="@+id/cancelImage"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:src="@drawable/cancel"
+                    app:layout_constraintBottom_toTopOf="@+id/cancelText"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="1.0">
+                </ImageView>
+                <TextView
+                    android:id="@+id/cancelText"
+                    android:layout_width="25dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="取消"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.714">
+                </TextView>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            </TextView>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/selectedDelete"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintHorizontal_bias="0.4">
+                <ImageView
+                    android:id="@+id/deleteImage"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:src="@drawable/delete"
+                    app:layout_constraintBottom_toTopOf="@+id/deleteText"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="1.0">
+                </ImageView>
+                <TextView
+                    android:id="@+id/deleteText"
+                    android:layout_width="25dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="删除"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.714">
+                </TextView>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
