@@ -112,14 +112,6 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
             AUDIO -> {
                 view = inflater.inflate(R.layout.audio_item, parent, false)
                 holder = AudioViewHolder(view)
-
-//                holder.audioName.setOnClickListener{
-//                    val position = holder.adapterPosition
-//                    val audio = audioList[position]
-//                    val intent = Intent(MyApplication.context, AudioInfo::class.java)
-//                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                    MyApplication.context.startActivity(intent)
-//                }
             }
             DATE_ADDED -> {
                 view = inflater.inflate(R.layout.date_added, parent, false)

@@ -7,11 +7,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.sound.ActivityCollector
 import com.example.sound.MyApplication
 import com.example.sound.R
 import com.example.sound.databinding.FragmentHistoryBinding
@@ -32,6 +34,7 @@ class HistoryFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel by lazy { ViewModelProvider(this).get(AudioViewModel::class.java) }
     private lateinit var audioListWithDate: MutableList<Audio>
+    private var isMultiSelecting = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -71,7 +74,8 @@ class HistoryFragment : Fragment() {
             // 隐藏多选时的工作栏
             binding.multiSelectedMenu.visibility = View.INVISIBLE
             binding.selectedCancel.setOnClickListener {
-                multiSelectedMenuChange(false)
+                isMultiSelecting = false
+                multiSelectedMenuChange(isMultiSelecting)
             }
 
             // 下拉刷新设置
@@ -85,6 +89,21 @@ class HistoryFragment : Fragment() {
                 binding.recyclerView.adapter = adapter
                 binding.swipeRefreshLayout.isRefreshing = false
             }
+
+            // 设置返回按钮的监听
+            requireActivity().onBackPressedDispatcher.addCallback(
+                viewLifecycleOwner,
+                object : OnBackPressedCallback(true) {
+                    override fun handleOnBackPressed() {
+                        if (isMultiSelecting){
+                            isMultiSelecting = false
+                            multiSelectedMenuChange(isMultiSelecting)
+                        } else{
+                            ActivityCollector.finishAll()
+                        }
+                    }
+                })
+
         } else {
             permReqLauncher.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)) // 读取权限
         }
@@ -136,12 +155,15 @@ class HistoryFragment : Fragment() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageEvent(event: MessageEvent) {
         when (event.type) {
-            MessageType.AudioItemLongPressed -> multiSelectedMenuChange(event.getBoolean())
+            MessageType.AudioItemLongPressed -> {
+                isMultiSelecting = true
+                multiSelectedMenuChange(isMultiSelecting)
+            }
         }
     }
 
-    private fun multiSelectedMenuChange(isMultiSelecting: Boolean){
-        if (isMultiSelecting) {
+    private fun multiSelectedMenuChange(isMultiSelectingTemp: Boolean){
+        if (isMultiSelectingTemp) {
             binding.multiSelectedMenu.visibility = View.VISIBLE
         } else {
             binding.multiSelectedMenu.visibility = View.INVISIBLE

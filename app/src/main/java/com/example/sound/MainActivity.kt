@@ -12,7 +12,7 @@ import com.example.sound.databinding.ActivityMainBinding
 import com.example.sound.ui.fragment.TabsAdapter
 import com.google.android.material.tabs.TabLayout
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
