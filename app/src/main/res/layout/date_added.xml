@@ -33,7 +33,7 @@
             android:id="@+id/dateDivider"
             android:layout_width="350dp"
             android:layout_height="1dp"
-            android:background="?android:attr/colorPrimary"
+            android:background="@color/colorDivider"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

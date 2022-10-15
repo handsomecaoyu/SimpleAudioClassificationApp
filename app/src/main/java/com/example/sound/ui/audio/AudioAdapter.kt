@@ -1,6 +1,7 @@
 package com.example.sound.ui.audio
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.GradientDrawable
 import android.icu.text.SimpleDateFormat
 import android.net.Uri
 import android.view.LayoutInflater
@@ -44,10 +45,12 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
             audioDuration.text = audio.duration
             audioDate.text = SimpleDateFormat("YYYY/M/d").format(audio.dateAddedTimeStamp*1000)
             // 根据不同的情况等级显示不同的颜色
+
+
             when (audio.classResponse.level) {
-                NORMAL -> audioClass.background = MyApplication.context.getDrawable(R.drawable.green_textview)
-                WARNING -> audioClass.background = MyApplication.context.getDrawable(R.drawable.orange_textview)
-                ABNORMAL -> audioClass.background = MyApplication.context.getDrawable(R.drawable.red_textview)
+                NORMAL -> audioClass.background = MyApplication.context.getDrawable(R.drawable.green_horizontal_line)
+                WARNING -> audioClass.background = MyApplication.context.getDrawable(R.drawable.orange_horizontal_line)
+                ABNORMAL -> audioClass.background = MyApplication.context.getDrawable(R.drawable.red_horizontal_line)
             }
             audioClass.text = audio.classResponse.result
 

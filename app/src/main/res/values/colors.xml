@@ -26,5 +26,6 @@
     <color name="orange">#EFA732</color>
     <color name="colorSelectedMenu">#FFFFFFFF</color>
     <color name="colorPure">#FFFFFFFF</color>
+    <color name="colorDivider">#AEAEAE</color>
 
 </resources>
