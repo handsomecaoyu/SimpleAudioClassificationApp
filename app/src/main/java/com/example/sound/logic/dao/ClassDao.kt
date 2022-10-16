@@ -22,4 +22,7 @@ interface ClassDao{
 
     @Query("DELETE FROM audioClass WHERE mediaId = :id")
     suspend fun deleteById(id: Long)
+
+    @Query("DELETE FROM audioClass WHERE mediaId in (:ids)")
+    suspend fun deleteByIds(ids: MutableList<Long>)
 }

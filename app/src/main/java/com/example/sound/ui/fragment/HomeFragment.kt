@@ -31,7 +31,6 @@ import com.example.sound.logic.model.ClassEntity
 import com.example.sound.logic.model.ClassResponse
 import com.example.sound.services.RecordService
 import com.example.sound.ui.audio.AudioViewModel
-import com.example.sound.utils.delete
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -94,8 +93,9 @@ class HomeFragment : Fragment() {
 
         // 设置录音按键动作
         binding.recordBtn.setOnClickListener{
-            if (hasPermissions(activity as Context, arrayOf(Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.INTERNET))) {
+            if (hasPermissions(activity as Context,
+                    arrayOf(Manifest.permission.RECORD_AUDIO,
+                        Manifest.permission.INTERNET))) {
                 when (status) {
                     START -> startRecord()
                     RECORDING -> stopRecord()
@@ -257,8 +257,6 @@ class HomeFragment : Fragment() {
     private fun deleteRecording(){
         if (recordingUriString != null){
             val recordingUri = Uri.parse(recordingUriString)
-//            val file = File(recordingUri.path)
-//            file.delete(MyApplication.context)
             MyApplication.context.contentResolver.delete(recordingUri, null, null);
         }
     }

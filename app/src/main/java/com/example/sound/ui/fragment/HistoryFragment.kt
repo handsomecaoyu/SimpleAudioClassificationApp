@@ -1,15 +1,22 @@
 package com.example.sound.ui.fragment
 
 import android.Manifest
+import android.app.RecoverableSecurityException
 import android.content.Context
+import android.content.IntentSender
+import android.content.IntentSender.SendIntentException
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
@@ -27,12 +34,10 @@ import com.example.sound.logic.database.DatabaseManager
 import com.example.sound.logic.model.Audio
 import com.example.sound.ui.audio.AudioAdapter
 import com.example.sound.ui.audio.AudioViewModel
-import com.example.sound.utils.delete
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.io.File
 
 
 class HistoryFragment : Fragment() {
@@ -195,26 +200,90 @@ class HistoryFragment : Fragment() {
     }
 
     // 删除对应的文件
+//    private fun deleteAudios(){
+//        for (position in adapter.multiSelectedSet) {
+//
+//            val audioTemp = audioListWithDate[position]
+//            historyScope.launch{
+//                withContext(Dispatchers.IO){
+//                    try {
+//                        // 从room数据库中删除记录
+//                        DatabaseManager.db.classDao.deleteById(audioTemp.id)
+//                        // 删除文件
+//                        println(audioTemp.uriString)
+//                        val uri = Uri.parse(audioTemp.uriString)
+//                        MyApplication.context.contentResolver.delete(uri, null, null);
+//
+//
+//                    } catch (e: Exception) {
+//                        Log.e(HISTORY_LOG_TAG, e.toString())
+//                    }
+//                    Log.v(HISTORY_LOG_TAG,"delete " + audioTemp.uriString + " in position " + position.toString())
+//                }
+//            }
+//        }
+//    }
     private fun deleteAudios(){
+        var ids = mutableListOf<Long>()
+        var uris = mutableListOf<Uri>()
         for (position in adapter.multiSelectedSet) {
-
             val audioTemp = audioListWithDate[position]
-            historyScope.launch{
-                withContext(Dispatchers.IO){
-                    try {
-                        // 从room数据库中删除记录
-                        DatabaseManager.db.classDao.deleteById(audioTemp.id)
-                        // 删除文件
-                        println(audioTemp.uriString)
-                        val uri = Uri.parse(audioTemp.uriString)
-//                        val file = File(audioTemp.path)
-//                        file.delete(MyApplication.context)
-                        MyApplication.context.contentResolver.delete(uri, null, null);
+            ids.add(audioTemp.id)
+            uris.add(Uri.parse(audioTemp.uriString))
+        }
+        deleteAudiosInRoom(ids)
+        deleteAudioFiles(uris)
 
-                    } catch (e: Exception) {
-                        Log.e(HISTORY_LOG_TAG, e.toString())
+    }
+
+    private fun deleteAudiosInRoom(ids: MutableList<Long>){
+        historyScope.launch {
+            withContext(Dispatchers.IO) {
+                try {
+                    // 从room数据库中删除记录
+                    DatabaseManager.db.classDao.deleteByIds(ids)
+                } catch (e: Exception) {
+                    Log.e(HISTORY_LOG_TAG, e.toString())
+                }
+            }
+        }
+    }
+
+//    private fun deleteAudioFiles(uris: MutableList<Uri>){
+//        historyScope.launch {
+//            withContext(Dispatchers.IO) {
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//                    val trashRequest = MediaStore.createTrashRequest(
+//                        MyApplication.context.contentResolver,
+//                        uris,
+//                        true
+//                    )
+//                    _permissionNeededForDelete.postValue(trashRequest.intentSender)
+//                    println(uris)
+//
+//                } else
+//                    Toast.makeText(MyApplication.context, "此版本还未适配删除", Toast.LENGTH_LONG).show()
+//            }
+//        }
+//    }
+
+    private val deleteIntentResultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {}
+
+    private fun deleteAudioFiles(uris: MutableList<Uri>){
+    historyScope.launch {
+            withContext(Dispatchers.IO) {
+                try {
+                    for (uri in uris)
+                        MyApplication.context.contentResolver.delete(uri, null, null)
+                } catch (securityException: SecurityException) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        val pendingIntent = MediaStore.createDeleteRequest(MyApplication.context.contentResolver, uris)
+                        val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent.intentSender).build()
+                        deleteIntentResultLauncher.launch(intentSenderRequest)
+                    } else {
+                        throw securityException
                     }
-                    Log.v(HISTORY_LOG_TAG,"delete " + audioTemp.uriString + " in position " + position.toString())
                 }
             }
         }
