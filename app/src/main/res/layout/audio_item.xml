@@ -31,8 +31,8 @@
 
         <ImageView
             android:id="@+id/audioIcon"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:layout_marginStart="28dp"
             android:src="@drawable/play"
             android:background="@drawable/play_button_circle_background"

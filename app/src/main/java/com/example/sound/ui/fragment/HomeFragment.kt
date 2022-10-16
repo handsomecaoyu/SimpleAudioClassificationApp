@@ -31,6 +31,7 @@ import com.example.sound.logic.model.ClassEntity
 import com.example.sound.logic.model.ClassResponse
 import com.example.sound.services.RecordService
 import com.example.sound.ui.audio.AudioViewModel
+import com.example.sound.utils.delete
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -184,7 +185,9 @@ class HomeFragment : Fragment() {
                 binding.audioRecordView.visibility = View.INVISIBLE
                 binding.durationDisplay.text = "00:00.00"
                 binding.recordBtn.setImageResource(R.drawable.ic_microphone_vector)
+                binding.recordBtn.setBackgroundResource(R.drawable.circle_background)
                 binding.resultDisplay.visibility = View.INVISIBLE
+                binding.cancelBtn.visibility = View.INVISIBLE
             }
 
             RECORDING -> {
@@ -254,27 +257,13 @@ class HomeFragment : Fragment() {
     private fun deleteRecording(){
         if (recordingUriString != null){
             val recordingUri = Uri.parse(recordingUriString)
-            val file = File(recordingUri.path)
-            file.delete(MyApplication.context)
+//            val file = File(recordingUri.path)
+//            file.delete(MyApplication.context)
+            MyApplication.context.contentResolver.delete(recordingUri, null, null);
         }
     }
 
-    private fun File.delete(context: Context): Boolean {
-        var selectionArgs = arrayOf(this.absolutePath)
-        val contentResolver = context.contentResolver
-        var where: String? = null
-        var filesUri: Uri? = null
-        if (android.os.Build.VERSION.SDK_INT >= 29) {
-            filesUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-            where = MediaStore.Audio.Media._ID + "=?"
-            selectionArgs = arrayOf(this.name)
-        } else {
-            where = MediaStore.MediaColumns.DATA + "=?"
-            filesUri = MediaStore.Files.getContentUri("external")
-        }
-        val int = contentResolver.delete(filesUri!!, where, selectionArgs)
-        return !this.exists()
-    }
+
 
     private fun insertClass(uriString: String, classResponse: ClassResponse){
         homeScope.launch {

@@ -5,7 +5,7 @@ import com.example.sound.helps.AUDIO
 data class Audio(
     val id: Long,
     val title: String,
-    val path: String,
+    val uriString: String,
     val dateAddedTimeStamp: Long,
     val dateAddedString: String,
     val duration: String,

@@ -45,8 +45,6 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
             audioDuration.text = audio.duration
             audioDate.text = SimpleDateFormat("YYYY/M/d").format(audio.dateAddedTimeStamp*1000)
             // 根据不同的情况等级显示不同的颜色
-
-
             when (audio.classResponse.level) {
                 NORMAL -> audioClass.background = MyApplication.context.getDrawable(R.drawable.green_horizontal_line)
                 WARNING -> audioClass.background = MyApplication.context.getDrawable(R.drawable.orange_horizontal_line)
@@ -59,7 +57,8 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
                 isMultiSelecting = true
                 cancelMultiSelectionLiveData.value = false
                 EventBus.getDefault().post(MessageEvent(MessageType.AudioItemLongPressed).put(isMultiSelecting))
-                multiSelectedSet.add(position)
+
+                multiSelectedSet.add(adapterPosition)
                 audioIcon.setImageResource(R.drawable.selected)
                 true
             }
@@ -69,21 +68,25 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
                 // 在多选模式下
                 if (isMultiSelecting){
                     // 如果已经选中，取消选中
-                    if (multiSelectedSet.contains(position)) {
-                        multiSelectedSet.remove(position)
+                    if (multiSelectedSet.contains(adapterPosition)) {
+                        multiSelectedSet.remove(adapterPosition)
                         audioIcon.setImageResource(R.drawable.play)
+                        println(multiSelectedSet)
+                        println(adapterPosition)
                     }
                     // 还未选中，则选中
                     else {
-                        multiSelectedSet.add(position)
+                        multiSelectedSet.add(adapterPosition)
                         audioIcon.setImageResource(R.drawable.selected)
+                        println(multiSelectedSet)
+                        println(adapterPosition)
                     }
                 }
             }
 
             cancelMultiSelectionLiveData.observe(viewLifecycleOwner, Observer {
                 if (it){
-                    multiSelectedSet.remove(position)
+                    multiSelectedSet.remove(adapterPosition)
                     audioIcon.setImageResource(R.drawable.play)
                 }
             })
@@ -142,6 +145,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
         return audioList[position].itemType
     }
 
+    // 取消多选
     fun cancelMultiSelection(){
         isMultiSelecting = false
         cancelMultiSelectionLiveData.value = true

@@ -19,4 +19,7 @@ interface ClassDao{
 
     @Delete
     suspend fun delete(vararg entities: ClassEntity): Int
+
+    @Query("DELETE FROM audioClass WHERE mediaId = :id")
+    suspend fun deleteById(id: Long)
 }
