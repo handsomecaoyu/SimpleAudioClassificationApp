@@ -11,6 +11,7 @@ data class Audio(
     val duration: String,
     val size: Int,
     val itemType: Int = AUDIO,
-    var classResponse: ClassResponse = ClassResponse()
+    var classResponse: ClassResponse = ClassResponse(),
+    var isSelected: Boolean = false
 )
 
