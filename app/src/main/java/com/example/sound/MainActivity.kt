@@ -2,12 +2,8 @@ package com.example.sound
 
 import android.app.Activity
 import android.content.Context
-import android.content.res.Configuration
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
 import androidx.core.view.ViewCompat
-import androidx.viewpager.widget.ViewPager
 import com.example.sound.databinding.ActivityMainBinding
 import com.example.sound.ui.fragment.TabsAdapter
 import com.google.android.material.tabs.TabLayout
@@ -25,7 +21,7 @@ class MainActivity : BaseActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val tabLayout = binding.tabLayout
-        tabLayout.addTab(tabLayout.newTab().setText("检测").setIcon(R.drawable.ic_microphone_vector))
+        tabLayout.addTab(tabLayout.newTab().setText("检测").setIcon(R.drawable.microphone))
         tabLayout.addTab(tabLayout.newTab().setText("记录").setIcon(R.drawable.history))
         tabLayout.tabGravity = TabLayout.GRAVITY_FILL
         val adapter = TabsAdapter(this, supportFragmentManager, tabLayout.tabCount)

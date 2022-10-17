@@ -116,5 +116,6 @@ enum class MessageType {
     UpdatemaxAmplitude,
     UpdateDuration,
     RecordUri,
-    AudioItemLongPressed
+    AudioItemLongPressed,
+    NewAudioAdded
 }

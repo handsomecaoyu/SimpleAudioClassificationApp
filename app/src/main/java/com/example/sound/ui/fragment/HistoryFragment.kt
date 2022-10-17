@@ -109,8 +109,7 @@ class HistoryFragment : Fragment() {
         binding.swipeRefreshLayout.setProgressBackgroundColorSchemeColor(MyApplication.context.getColor(R.color.colorPrimary))
         binding.swipeRefreshLayout.setColorSchemeColors(MyApplication.context.getColor(R.color.white))
         binding.swipeRefreshLayout.setOnRefreshListener {
-            audioListWithDate = getAudioList()
-            adapter.update(audioListWithDate)
+            refreshAdapter()
             binding.swipeRefreshLayout.isRefreshing = false
         }
 
@@ -148,6 +147,7 @@ class HistoryFragment : Fragment() {
             }
         }
 
+    // 获得音频信息列表
     private fun getAudioList(): MutableList<Audio>{
         var audioList = viewModel.getAudioInfo()
         audioList = addClassResult(audioList)
@@ -177,6 +177,12 @@ class HistoryFragment : Fragment() {
         return audioList
     }
 
+    // 刷新adapter
+    private fun refreshAdapter(){
+        audioListWithDate = getAudioList()
+        adapter.update(audioListWithDate)
+    }
+
     // EventBus的消息队列
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageEvent(event: MessageEvent) {
@@ -185,6 +191,7 @@ class HistoryFragment : Fragment() {
                 isMultiSelecting = true
                 multiSelectedMenuChange(isMultiSelecting)
             }
+            MessageType.NewAudioAdded -> refreshAdapter()
         }
     }
 
@@ -207,46 +214,45 @@ class HistoryFragment : Fragment() {
             ids.add(audioTemp.id)
             uris.add(Uri.parse(audioTemp.uriString))
         }
-        deleteAudiosInRoom(ids)
+        historyScope.launch {
+            withContext(Dispatchers.IO) {
+                deleteAudiosInRoom(ids)
+            }
+        }
         deleteAudioFiles(uris)
-
+        refreshAdapter()
     }
 
     // 删除本地数据库中的记录
-    private fun deleteAudiosInRoom(ids: MutableList<Long>){
-        historyScope.launch {
-            withContext(Dispatchers.IO) {
-                try {
-                    // 从room数据库中删除记录
-                    DatabaseManager.db.classDao.deleteByIds(ids)
-                } catch (e: Exception) {
-                    Log.e(HISTORY_LOG_TAG, e.toString())
-                }
-            }
+    private suspend fun deleteAudiosInRoom(ids: MutableList<Long>){
+        try {
+            // 从room数据库中删除记录
+            DatabaseManager.db.classDao.deleteByIds(ids)
+        } catch (e: Exception) {
+            Log.e(HISTORY_LOG_TAG, e.toString())
         }
     }
 
 
     private val deleteIntentResultLauncher =
-        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {}
+        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
+            refreshAdapter()
+        }
 
     // 删除本地的音频
     private fun deleteAudioFiles(uris: MutableList<Uri>){
-    historyScope.launch {
-            withContext(Dispatchers.IO) {
-                try {
-                    for (uri in uris)
-                        MyApplication.context.contentResolver.delete(uri, null, null)
-                } catch (securityException: SecurityException) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                        val pendingIntent = MediaStore.createDeleteRequest(MyApplication.context.contentResolver, uris)
-                        val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent.intentSender).build()
-                        deleteIntentResultLauncher.launch(intentSenderRequest)
-                    } else {
-                        throw securityException
-                    }
-                }
+        try {
+            for (uri in uris)
+                MyApplication.context.contentResolver.delete(uri, null, null)
+        } catch (securityException: SecurityException) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val pendingIntent = MediaStore.createDeleteRequest(MyApplication.context.contentResolver, uris)
+                val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent.intentSender).build()
+                deleteIntentResultLauncher.launch(intentSenderRequest)
+            } else {
+                throw securityException
             }
         }
+
     }
 }

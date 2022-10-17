@@ -9,7 +9,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -75,22 +74,6 @@ class HomeFragment : Fragment() {
         binding.cancelBtn.visibility = View.INVISIBLE
         binding.resultDisplay.visibility = View.INVISIBLE
 
-        // 注册音频类别的观察对象
-        // 注意这部分不能写在重复调用的地方，不然会多次注册observer
-        viewModel.audioClassLiveData.observe(viewLifecycleOwner, Observer { result ->
-            val audioClass = result.getOrNull()
-            if (audioClass != null){
-                audioClassDisplay = audioClass.result
-                // 将结果添加到数据库中
-                recordingUriString?.let { insertClass(it, audioClass) }
-            } else {
-                val emptyClassResponse = ClassResponse(result="网络异常")
-                audioClassDisplay = emptyClassResponse.result
-                recordingUriString?.let { insertClass(it, emptyClassResponse) }
-            }
-            binding.resultDisplay.text = audioClassDisplay
-        })
-
         // 设置录音按键动作
         binding.recordBtn.setOnClickListener{
             if (hasPermissions(activity as Context,
@@ -113,6 +96,23 @@ class HomeFragment : Fragment() {
             deleteRecording()
             prepareRecord()
         }
+
+        // 注册音频类别的观察对象
+        // 注意这部分不能写在重复调用的地方，不然会多次注册observer
+        viewModel.audioClassLiveData.observe(viewLifecycleOwner, Observer { result ->
+            val audioClass = result.getOrNull()
+            if (audioClass != null){
+                audioClassDisplay = audioClass.result
+                // 将结果添加到数据库中
+                recordingUriString?.let { insertClass(it, audioClass) }
+            } else {
+                val emptyClassResponse = ClassResponse(result="网络异常")
+                audioClassDisplay = emptyClassResponse.result
+                recordingUriString?.let { insertClass(it, emptyClassResponse) }
+            }
+            binding.resultDisplay.text = audioClassDisplay
+            EventBus.getDefault().post(MessageEvent(MessageType.NewAudioAdded).put(true))
+        })
     }
 
     override fun onDestroyView() {
@@ -184,8 +184,7 @@ class HomeFragment : Fragment() {
                 // 隐藏波形，识别结果，重置录音时间，改变按钮形式
                 binding.audioRecordView.visibility = View.INVISIBLE
                 binding.durationDisplay.text = "00:00.00"
-                binding.recordBtn.setImageResource(R.drawable.ic_microphone_vector)
-                binding.recordBtn.setBackgroundResource(R.drawable.circle_background)
+                binding.recordBtn.setImageResource(R.drawable.microphone)
                 binding.resultDisplay.visibility = View.INVISIBLE
                 binding.cancelBtn.visibility = View.INVISIBLE
             }
@@ -201,13 +200,12 @@ class HomeFragment : Fragment() {
                 binding.audioRecordView.visibility = View.VISIBLE
                 binding.audioRecordView.recreate()
                 // 改变按钮形式
-                binding.recordBtn.setImageResource(R.drawable.ic_stop_vector)
+                binding.recordBtn.setImageResource(R.drawable.stop)
             }
 
             STOP -> {
                 // 改变按钮形式
-                binding.recordBtn.setImageResource(R.drawable.yes)
-                binding.recordBtn.setBackgroundResource(R.drawable.green_circle_background)
+                binding.recordBtn.setImageResource(R.drawable.selected_white)
                 binding.cancelBtn.visibility = View.VISIBLE
             }
 
@@ -217,7 +215,6 @@ class HomeFragment : Fragment() {
                 // 改变按钮形式
                 binding.cancelBtn.visibility = View.INVISIBLE
                 binding.recordBtn.setImageResource(R.drawable.next)
-                binding.recordBtn.setBackgroundResource(R.drawable.circle_background)
             }
         }
     }
@@ -261,8 +258,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-
-
+    // 向数据库中插入音频类别的信息
     private fun insertClass(uriString: String, classResponse: ClassResponse){
         homeScope.launch {
             // 最后一个是在Media.Audio中的主键id
