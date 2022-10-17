@@ -82,58 +82,51 @@ class HistoryFragment : Fragment() {
 
         if (hasPermissions(activity as Context, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))) {
             // 获得包含音频信息的列表
-            var audioList = viewModel.getAudioInfo()
-            audioList = addClassResult(audioList)
-            audioListWithDate = addDateToList(audioList)
+            audioListWithDate = getAudioList()
             adapter = AudioAdapter(this, audioListWithDate)
             binding.recyclerView.adapter = adapter
-
-            // 隐藏多选时的工作栏
-            binding.multiSelectedMenu.visibility = View.INVISIBLE
-
-            // 取消多选
-            binding.selectedCancel.setOnClickListener {
-                isMultiSelecting = false
-                multiSelectedMenuChange(isMultiSelecting)
-            }
-
-            // 删除
-            binding.selectedDelete.setOnClickListener {
-                deleteAudios()
-                isMultiSelecting = false
-                multiSelectedMenuChange(isMultiSelecting)
-            }
-
-            // 下拉刷新设置
-            binding.swipeRefreshLayout.setProgressBackgroundColorSchemeColor(MyApplication.context.getColor(R.color.colorPrimary))
-            binding.swipeRefreshLayout.setColorSchemeColors(MyApplication.context.getColor(R.color.white))
-            binding.swipeRefreshLayout.setOnRefreshListener {
-                var audioList = viewModel.getAudioInfo()
-                audioList = addClassResult(audioList)
-                audioListWithDate = addDateToList(audioList)
-                adapter = AudioAdapter(this, audioListWithDate)
-                binding.recyclerView.adapter = adapter
-                binding.swipeRefreshLayout.isRefreshing = false
-            }
-
-            // 设置返回按钮的监听
-            requireActivity().onBackPressedDispatcher.addCallback(
-                viewLifecycleOwner,
-                object : OnBackPressedCallback(true) {
-                    override fun handleOnBackPressed() {
-                        if (isMultiSelecting){
-                            isMultiSelecting = false
-                            multiSelectedMenuChange(isMultiSelecting)
-                        } else{
-                            ActivityCollector.finishAll()
-                        }
-                    }
-                })
-
-
         } else {
             permReqLauncher.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)) // 读取权限
         }
+
+        // 隐藏多选时的工作栏
+        binding.multiSelectedMenu.visibility = View.INVISIBLE
+
+        // 取消多选
+        binding.selectedCancel.setOnClickListener {
+            isMultiSelecting = false
+            multiSelectedMenuChange(isMultiSelecting)
+        }
+
+        // 删除
+        binding.selectedDelete.setOnClickListener {
+            deleteAudios()
+            isMultiSelecting = false
+            multiSelectedMenuChange(isMultiSelecting)
+        }
+
+        // 下拉刷新设置
+        binding.swipeRefreshLayout.setProgressBackgroundColorSchemeColor(MyApplication.context.getColor(R.color.colorPrimary))
+        binding.swipeRefreshLayout.setColorSchemeColors(MyApplication.context.getColor(R.color.white))
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            audioListWithDate = getAudioList()
+            adapter.update(audioListWithDate)
+            binding.swipeRefreshLayout.isRefreshing = false
+        }
+
+        // 设置返回按钮的监听
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (isMultiSelecting){
+                        isMultiSelecting = false
+                        multiSelectedMenuChange(isMultiSelecting)
+                    } else{
+                        ActivityCollector.finishAll()
+                    }
+                }
+            })
 
     }
 
@@ -149,11 +142,17 @@ class HistoryFragment : Fragment() {
                 it.value == true
             }
             if (granted) {
-                val audioList = viewModel.getAudioInfo()
-                adapter = AudioAdapter(this, audioList)
+                audioListWithDate = getAudioList()
+                adapter = AudioAdapter(this, audioListWithDate)
                 binding.recyclerView.adapter = adapter
             }
         }
+
+    private fun getAudioList(): MutableList<Audio>{
+        var audioList = viewModel.getAudioInfo()
+        audioList = addClassResult(audioList)
+        return addDateToList(audioList)
+    }
 
     // 向音频列表中添加音频信息
     private fun addDateToList(audioList: List<Audio>): MutableList<Audio>{
@@ -199,30 +198,7 @@ class HistoryFragment : Fragment() {
         }
     }
 
-    // 删除对应的文件
-//    private fun deleteAudios(){
-//        for (position in adapter.multiSelectedSet) {
-//
-//            val audioTemp = audioListWithDate[position]
-//            historyScope.launch{
-//                withContext(Dispatchers.IO){
-//                    try {
-//                        // 从room数据库中删除记录
-//                        DatabaseManager.db.classDao.deleteById(audioTemp.id)
-//                        // 删除文件
-//                        println(audioTemp.uriString)
-//                        val uri = Uri.parse(audioTemp.uriString)
-//                        MyApplication.context.contentResolver.delete(uri, null, null);
-//
-//
-//                    } catch (e: Exception) {
-//                        Log.e(HISTORY_LOG_TAG, e.toString())
-//                    }
-//                    Log.v(HISTORY_LOG_TAG,"delete " + audioTemp.uriString + " in position " + position.toString())
-//                }
-//            }
-//        }
-//    }
+    // 删除选中的音频
     private fun deleteAudios(){
         var ids = mutableListOf<Long>()
         var uris = mutableListOf<Uri>()
@@ -236,6 +212,7 @@ class HistoryFragment : Fragment() {
 
     }
 
+    // 删除本地数据库中的记录
     private fun deleteAudiosInRoom(ids: MutableList<Long>){
         historyScope.launch {
             withContext(Dispatchers.IO) {
@@ -249,27 +226,11 @@ class HistoryFragment : Fragment() {
         }
     }
 
-//    private fun deleteAudioFiles(uris: MutableList<Uri>){
-//        historyScope.launch {
-//            withContext(Dispatchers.IO) {
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-//                    val trashRequest = MediaStore.createTrashRequest(
-//                        MyApplication.context.contentResolver,
-//                        uris,
-//                        true
-//                    )
-//                    _permissionNeededForDelete.postValue(trashRequest.intentSender)
-//                    println(uris)
-//
-//                } else
-//                    Toast.makeText(MyApplication.context, "此版本还未适配删除", Toast.LENGTH_LONG).show()
-//            }
-//        }
-//    }
 
     private val deleteIntentResultLauncher =
         registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {}
 
+    // 删除本地的音频
     private fun deleteAudioFiles(uris: MutableList<Uri>){
     historyScope.launch {
             withContext(Dispatchers.IO) {

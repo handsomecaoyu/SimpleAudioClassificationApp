@@ -22,7 +22,7 @@ import com.example.sound.logic.model.Audio
 import com.example.sound.ui.fragment.HistoryFragment
 import org.greenrobot.eventbus.EventBus
 
-class AudioAdapter(private val fragment: HistoryFragment, private val audioList: MutableList<Audio>) :
+class AudioAdapter(private val fragment: HistoryFragment, private var audioList: MutableList<Audio>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>(){
 
     // 是否被选中的集合
@@ -149,5 +149,10 @@ class AudioAdapter(private val fragment: HistoryFragment, private val audioList:
     fun cancelMultiSelection(){
         isMultiSelecting = false
         cancelMultiSelectionLiveData.value = true
+    }
+
+    fun update(newAudioList: MutableList<Audio>){
+        audioList = newAudioList
+        this!!.notifyDataSetChanged()
     }
 }
