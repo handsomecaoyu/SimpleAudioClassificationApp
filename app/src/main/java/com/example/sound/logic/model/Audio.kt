@@ -1,6 +1,7 @@
 package com.example.sound.logic.model
 
 import com.example.sound.helps.AUDIO
+import com.example.sound.helps.FINISHED
 
 data class Audio(
     val id: Long,
@@ -13,6 +14,7 @@ data class Audio(
     val itemType: Int = AUDIO,
     var classResponse: ClassResponse = ClassResponse(),
     var isSelected: Boolean = false,
-    var isExpended: Boolean = false
+    var isExpended: Boolean = false,
+    var status: Int = FINISHED
 )
 

@@ -43,10 +43,6 @@ object DatabaseManager {
             .build()
     }
 
-//    fun saveApplication(applicationContext: Context) {
-//        DatabaseManager.applicationContext = applicationContext
-//    }
-
     private object CreatedCallBack : RoomDatabase.Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             //在新装app时会调用，调用时机为数据库build()之后，数据库升级时不调用此函数

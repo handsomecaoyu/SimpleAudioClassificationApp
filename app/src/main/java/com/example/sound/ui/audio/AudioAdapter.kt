@@ -32,6 +32,8 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
     private var isMultiSelecting = false
     // 上一个展开的位置
     private var lastExpendedPosition = -1
+    // 上一个播放音频的位置
+    private var lastPlayAudioPosition = -1
 
 
     // 用于显示音频信息
@@ -59,6 +61,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                     MyApplication.context.getDrawable(R.drawable.red_horizontal_line)
             }
             audioClass.text = audio.classResponse.result
+
             // 根据选择状态设置图片
             // 这段看似比较多余，因为在setOnClickListener中已经有了改变图片的部分，
             // 但是如果没有这段，就会出现点击之后，相隔十多个的选项也会变成选中的图片，很离谱的bug，我也不懂为什么
@@ -66,7 +69,11 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
             if (audio.isSelected) {
                 audioIcon.setImageResource(R.drawable.selected)
             } else
-                audioIcon.setImageResource(R.drawable.play)
+                when (audio.status){
+                    FINISHED -> audioIcon.setImageResource(R.drawable.play)
+                    PLAYING -> audioIcon.setImageResource(R.drawable.pause)
+                }
+
 
             // 决定是否展开子项
             if (audio.isExpended) {
@@ -102,7 +109,6 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                 view = inflater.inflate(R.layout.audio_item, parent, false)
                 val holderTemp = AudioViewHolder(view)
 
-
                 // 关于按键点击的监听最好写在这里，如果写在onBindViewHolder，每次刷到它都会重新bind一遍
                 // 长按进入多选模式
                 holderTemp.itemView.setOnLongClickListener {
@@ -117,7 +123,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                     true
                 }
 
-                // 设置单选
+                // 设置整个卡片的点击事件
                 holderTemp.itemView.setOnClickListener {
                     val position = holderTemp.layoutPosition
                     val audio = audioList[position]
@@ -137,22 +143,51 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                         }
                     }
                     else {
-                        // 如果已经展开，则收起
                         audio.isExpended = !audio.isExpended
                         if (lastExpendedPosition >= 0 && lastExpendedPosition!=holderTemp.layoutPosition)
                             audioList[lastExpendedPosition].isExpended = false
-
-                        notifyItemChanged(lastExpendedPosition)
+                        // 收起之前的下拉
+                        if (lastExpendedPosition >= 0)
+                            notifyItemChanged(lastExpendedPosition)
+                        // 将点中的下拉
                         notifyItemChanged(holderTemp.layoutPosition)
                         lastExpendedPosition = holderTemp.layoutPosition
 
                     }
                 }
 
+                // 设置播放图标的点击事件
                 holderTemp.audioIcon.setOnClickListener{
-                    val intent = Intent(MyApplication.context, PlayService::class.java)
-                    intent.putExtra("uriString", audioList[holderTemp.layoutPosition].uriString)
-                    MyApplication.context.startService(intent)
+                    val position = holderTemp.layoutPosition
+                    val audio = audioList[position]
+                    // 点击播放的时候也会下拉
+                    if (!audio.isExpended) {
+                        audio.isExpended = true
+                        if (lastExpendedPosition >= 0 && lastExpendedPosition!=holderTemp.layoutPosition)
+                            audioList[lastExpendedPosition].isExpended = false
+                        // 收起之前的下拉
+                        if (lastExpendedPosition >= 0)
+                            notifyItemChanged(lastExpendedPosition)
+                        // 将点中的下拉
+                        notifyItemChanged(holderTemp.layoutPosition)
+                        lastExpendedPosition = holderTemp.layoutPosition
+                    }
+
+                    when (audio.status){
+                        // 播放音频
+                        FINISHED -> {
+                            audio.status = PLAYING
+                            holderTemp.audioIcon.setImageResource(R.drawable.pause)
+                            playAudio(holderTemp.layoutPosition)
+                            if (lastPlayAudioPosition >= 0)
+
+                        }
+                        PLAYING -> {
+                            audio.status = FINISHED
+                            holderTemp.audioIcon.setImageResource(R.drawable.play)
+                        }
+                    }
+
                 }
 
                 holder = holderTemp
@@ -199,4 +234,11 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
         audioList = newAudioList
         this.notifyDataSetChanged()
     }
+
+    private fun playAudio(position: Int){
+        val intent = Intent(MyApplication.context, PlayService::class.java)
+        intent.putExtra("uriString", audioList[position].uriString)
+        MyApplication.context.startService(intent)
+    }
+
 }

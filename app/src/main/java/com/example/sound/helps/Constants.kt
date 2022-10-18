@@ -22,3 +22,8 @@ const val DATE_ADDED = 1
 const val NORMAL = 0
 const val WARNING = 1
 const val ABNORMAL = 2
+
+// 查看界面的音频状态
+const val FINISHED = 0
+const val PLAYING = 1
+const val PAUSED = 2
