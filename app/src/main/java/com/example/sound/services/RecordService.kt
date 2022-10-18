@@ -100,9 +100,9 @@ class RecordService : Service() {
     }
 
     private fun stopRecording() {
-        duration = 0
         durationTimer.cancel()
         amplitudeTimer.cancel()
+        duration = 0
         recorder?.apply {
             stop()
             reset()

@@ -2,12 +2,14 @@ package com.example.sound.logic.dao
 
 import android.annotation.SuppressLint
 import android.content.ContentUris
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import com.example.sound.MyApplication.Companion.context
 import com.example.sound.logic.model.Audio
 import java.text.SimpleDateFormat
+import kotlin.math.roundToLong
 
 object AudioDao {
     @SuppressLint("SimpleDateFormat")
@@ -58,18 +60,22 @@ object AudioDao {
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
             val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
 
+
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)
                 val name = cursor.getString(nameColumn)
                 val dateAdd = cursor.getLong(timeAddColumn)
-                val duration = cursor.getInt(durationColumn)
-                println(duration)
+                var duration = cursor.getLong(durationColumn)
                 val size = cursor.getInt(sizeColumn)
 
                 val contentUri: Uri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     id
                 )
+
+                // 音频进入存储的时候，MediaStore不会立刻计算时长等信息，这时候要从音频的元数据中获得时长
+                if (duration == 0L)
+                    duration = getDurationFromUri(contentUri)
 
                 // 添加信息
                 audios.add(Audio(
@@ -84,5 +90,17 @@ object AudioDao {
             }
         }
         return audios
+    }
+
+    // 从音频的元数据中获得时长
+    private fun getDurationFromUri(uri: Uri): Long {
+        return try {
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(context, uri)
+            val time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)!!
+            time.toLong()
+        } catch (e: Exception) {
+            0L
+        }
     }
 }

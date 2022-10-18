@@ -8,7 +8,7 @@ data class Audio(
     val uriString: String,
     val dateAddedTimeStamp: Long,
     val dateAddedString: String,
-    val duration: String,
+    var duration: String,
     val size: Int,
     val itemType: Int = AUDIO,
     var classResponse: ClassResponse = ClassResponse(),

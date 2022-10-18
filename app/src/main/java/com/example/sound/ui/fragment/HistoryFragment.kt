@@ -1,6 +1,7 @@
 package com.example.sound.ui.fragment
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.RecoverableSecurityException
 import android.content.Context
 import android.content.IntentSender
@@ -38,6 +39,7 @@ import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.text.SimpleDateFormat
 
 
 class HistoryFragment : Fragment() {
@@ -184,6 +186,7 @@ class HistoryFragment : Fragment() {
     }
 
     // EventBus的消息队列
+    @SuppressLint("SimpleDateFormat")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageEvent(event: MessageEvent) {
         when (event.type) {
