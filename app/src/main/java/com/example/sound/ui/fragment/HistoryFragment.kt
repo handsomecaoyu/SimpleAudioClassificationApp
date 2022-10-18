@@ -217,6 +217,7 @@ class HistoryFragment : Fragment() {
             ids.add(audioTemp.id)
             uris.add(Uri.parse(audioTemp.uriString))
         }
+        adapter.multiSelectedSet.clear()
         historyScope.launch {
             withContext(Dispatchers.IO) {
                 deleteAudiosInRoom(ids)

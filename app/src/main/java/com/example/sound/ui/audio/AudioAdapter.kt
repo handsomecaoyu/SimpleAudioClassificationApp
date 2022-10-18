@@ -139,7 +139,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                     else {
                         // 如果已经展开，则收起
                         audio.isExpended = !audio.isExpended
-                        if (lastExpendedPosition >= 0)
+                        if (lastExpendedPosition >= 0 && lastExpendedPosition!=holderTemp.layoutPosition)
                             audioList[lastExpendedPosition].isExpended = false
 
                         notifyItemChanged(lastExpendedPosition)
