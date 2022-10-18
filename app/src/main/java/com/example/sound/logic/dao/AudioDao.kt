@@ -63,6 +63,7 @@ object AudioDao {
                 val name = cursor.getString(nameColumn)
                 val dateAdd = cursor.getLong(timeAddColumn)
                 val duration = cursor.getInt(durationColumn)
+                println(duration)
                 val size = cursor.getInt(sizeColumn)
 
                 val contentUri: Uri = ContentUris.withAppendedId(

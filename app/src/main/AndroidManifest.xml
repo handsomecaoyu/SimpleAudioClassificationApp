@@ -22,6 +22,12 @@
             android:exported="true"
             android:permission="TODO" />
 
+        <service
+            android:name=".services.PlayService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="TODO" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">

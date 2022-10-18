@@ -1,6 +1,7 @@
 package com.example.sound.ui.audio
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.icu.text.SimpleDateFormat
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +19,7 @@ import com.example.sound.helps.*
 import com.example.sound.logic.MessageEvent
 import com.example.sound.logic.MessageType
 import com.example.sound.logic.model.Audio
+import com.example.sound.services.PlayService
 import com.example.sound.ui.fragment.HistoryFragment
 import org.greenrobot.eventbus.EventBus
 
@@ -145,6 +147,12 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                         lastExpendedPosition = holderTemp.layoutPosition
 
                     }
+                }
+
+                holderTemp.audioIcon.setOnClickListener{
+                    val intent = Intent(MyApplication.context, PlayService::class.java)
+                    intent.putExtra("uriString", audioList[holderTemp.layoutPosition].uriString)
+                    MyApplication.context.startService(intent)
                 }
 
                 holder = holderTemp

@@ -111,7 +111,6 @@ class HomeFragment : Fragment() {
                 recordingUriString?.let { insertClass(it, emptyClassResponse) }
             }
             binding.resultDisplay.text = audioClassDisplay
-            EventBus.getDefault().post(MessageEvent(MessageType.NewAudioAdded).put(true))
         })
     }
 
@@ -169,6 +168,7 @@ class HomeFragment : Fragment() {
     private fun prepareRecord(){
         status = START
         uiChange(status)
+        EventBus.getDefault().post(MessageEvent(MessageType.NewAudioAdded).put(true))
     }
 
     // 改变UI
