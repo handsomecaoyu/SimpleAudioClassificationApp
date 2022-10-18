@@ -26,7 +26,11 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
 
     // 是否被选中的集合
     var multiSelectedSet = mutableSetOf<Int>()
-    var isMultiSelecting = false
+    // 是否进入多选状态的标志
+    private var isMultiSelecting = false
+    // 上一个展开的位置
+    private var lastExpendedPosition = -1
+
 
     // 用于显示音频信息
     inner class AudioViewHolder(view: View) : RecyclerView.ViewHolder(view){
@@ -133,7 +137,12 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                     else {
                         // 如果已经展开，则收起
                         audio.isExpended = !audio.isExpended
+                        if (lastExpendedPosition >= 0)
+                            audioList[lastExpendedPosition].isExpended = false
+
+                        notifyItemChanged(lastExpendedPosition)
                         notifyItemChanged(holderTemp.layoutPosition)
+                        lastExpendedPosition = holderTemp.layoutPosition
 
                     }
                 }
