@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -26,7 +27,6 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
     // 是否被选中的集合
     var multiSelectedSet = mutableSetOf<Int>()
     var isMultiSelecting = false
-    private val cancelMultiSelectionLiveData = MutableLiveData<Boolean>()
 
     // 用于显示音频信息
     inner class AudioViewHolder(view: View) : RecyclerView.ViewHolder(view){
@@ -35,6 +35,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
         private val audioDate: TextView = view.findViewById(R.id.audioDate)  // 音频录制的日期
         private val audioClass: TextView = view.findViewById(R.id.audioClass)  // 结果类型
         val audioIcon: ImageView = view.findViewById(R.id.audioIcon)
+        val subItem: ConstraintLayout = view.findViewById(R.id.sub)
         @SuppressLint("UseCompatLoadingForDrawables", "SimpleDateFormat")
         fun bind(audio: Audio, position: Int) {
             // 在卡片中显示各种信息
@@ -56,10 +57,17 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
             // 这段看似比较多余，因为在setOnClickListener中已经有了改变图片的部分，
             // 但是如果没有这段，就会出现点击之后，相隔十多个的选项也会变成选中的图片，很离谱的bug，我也不懂为什么
             // 但这段确实起作用的，
-            if (audio.isSelected)
+            if (audio.isSelected) {
                 audioIcon.setImageResource(R.drawable.selected)
-            else
+            } else
                 audioIcon.setImageResource(R.drawable.play)
+
+            // 决定是否展开子项
+            if (audio.isExpended) {
+                subItem.visibility = View.VISIBLE
+            } else {
+                subItem.visibility = View.GONE
+            }
         }
     }
 
@@ -88,42 +96,45 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                 view = inflater.inflate(R.layout.audio_item, parent, false)
                 val holderTemp = AudioViewHolder(view)
 
+
+                // 关于按键点击的监听最好写在这里，如果写在onBindViewHolder，每次刷到它都会重新bind一遍
                 // 长按进入多选模式
                 holderTemp.itemView.setOnLongClickListener {
+                    val position = holderTemp.layoutPosition
+                    val audio = audioList[position]
                     isMultiSelecting = true
-                    cancelMultiSelectionLiveData.value = false
                     EventBus.getDefault()
                         .post(MessageEvent(MessageType.AudioItemLongPressed).put(isMultiSelecting))
-                    multiSelectedSet.add(holderTemp.layoutPosition)
-                    audioList[holderTemp.layoutPosition].isSelected = true
+                    multiSelectedSet.add(position)
+                    audio.isSelected = true
                     holderTemp.audioIcon.setImageResource(R.drawable.selected)
                     true
                 }
 
                 // 设置单选
                 holderTemp.itemView.setOnClickListener {
+                    val position = holderTemp.layoutPosition
+                    val audio = audioList[position]
                     // 在多选模式下
                     if (isMultiSelecting){
                         // 如果已经选中，取消选中
-                        if (multiSelectedSet.contains(holderTemp.layoutPosition)) {
-                            multiSelectedSet.remove(holderTemp.layoutPosition)
-                            audioList[holderTemp.layoutPosition].isSelected = false
+                        if (audio.isSelected) {
+                            multiSelectedSet.remove(position)
+                            audio.isSelected = false
                             holderTemp.audioIcon.setImageResource(R.drawable.play)
                         }
                         // 还未选中，则选中
                         else {
-                            multiSelectedSet.add(holderTemp.layoutPosition)
-                            audioList[holderTemp.layoutPosition].isSelected = true
+                            multiSelectedSet.add(position)
+                            audio.isSelected = true
                             holderTemp.audioIcon.setImageResource(R.drawable.selected)
                         }
                     }
-                }
+                    else {
+                        // 如果已经展开，则收起
+                        audio.isExpended = !audio.isExpended
+                        notifyItemChanged(holderTemp.layoutPosition)
 
-                // 观察是否取消多选
-                cancelMultiSelectionLiveData.observe(holderTemp.itemView.context as LifecycleOwner) {
-                    if (it) {
-                        multiSelectedSet.remove(holderTemp.layoutPosition)
-                        holderTemp.audioIcon.setImageResource(R.drawable.play)
                     }
                 }
 
@@ -159,7 +170,11 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
     // 取消多选
     fun cancelMultiSelection(){
         isMultiSelecting = false
-        cancelMultiSelectionLiveData.value = true
+        for (position in multiSelectedSet){
+            audioList[position].isSelected =false
+            notifyItemChanged(position)
+        }
+        multiSelectedSet.clear()
     }
 
     @SuppressLint("NotifyDataSetChanged")

@@ -2,7 +2,13 @@ package com.example.sound
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.BlendMode
+import android.graphics.BlendModeColorFilter
+import android.graphics.Color
+import android.graphics.PorterDuff
+import android.os.Build
 import android.os.Bundle
+import androidx.annotation.RequiresApi
 import androidx.core.view.ViewCompat
 import com.example.sound.databinding.ActivityMainBinding
 import com.example.sound.ui.fragment.TabsAdapter
@@ -28,11 +34,25 @@ class MainActivity : BaseActivity() {
         val viewPager = binding.viewPager
         viewPager.adapter = adapter
         viewPager.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))
+
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 viewPager.currentItem = tab.position
+//                val color = MyApplication.context.getColor(R.color.colorPrimary)
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+//                    tab.icon?.colorFilter = BlendModeColorFilter(color, BlendMode.SRC_ATOP)
+//                else
+//                    tab.icon?.setColorFilter(color, PorterDuff.Mode.SRC_IN)
             }
-            override fun onTabUnselected(tab: TabLayout.Tab) {}
+
+            override fun onTabUnselected(tab: TabLayout.Tab) {
+//                val color = MyApplication.context.getColor(R.color.colorPure)
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+//                    tab.icon?.colorFilter = BlendModeColorFilter(color, BlendMode.SRC_ATOP)
+//                else
+//                    tab.icon?.setColorFilter(color, PorterDuff.Mode.SRC_IN)
+            }
+
             override fun onTabReselected(tab: TabLayout.Tab) {}
         })
 

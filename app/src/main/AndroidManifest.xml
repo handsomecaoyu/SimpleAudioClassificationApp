@@ -15,16 +15,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Sound"
         android:networkSecurityConfig="@xml/network_config">
-        <activity
-            android:name=".AudioInfo"
-            android:exported="false"
-            android:label="@string/title_activity_audio_info"
-            android:theme="@style/Theme.Sound.NoActionBar" />
 
         <service
             android:name=".services.RecordService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true"
+            android:permission="TODO" />
 
         <activity
             android:name=".MainActivity"

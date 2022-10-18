@@ -28,4 +28,5 @@ internal class TabsAdapter(
             }
         }
     }
+
 }

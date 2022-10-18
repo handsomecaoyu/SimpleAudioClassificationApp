@@ -5,85 +5,118 @@
     xmlns:tools="http://schemas.android.com/tools"
     app:cardBackgroundColor="@color/colorPure"
     android:layout_width="match_parent"
-    android:layout_height="75dp"
+    android:layout_height="wrap_content"
     android:layout_margin="0dp"
     app:cardCornerRadius="0dp"
     app:cardElevation="0dp">
-
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/whole"
         android:layout_width="match_parent"
-        android:layout_height="75dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_margin="0dp"
         android:orientation="vertical">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/main"
+            android:layout_width="match_parent"
+            android:layout_height="75dp"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="0dp"
+            android:orientation="vertical"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/audioDate"
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/audioDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="00:00"
+                android:typeface="monospace"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/audioDuration"
+                app:layout_constraintTop_toBottomOf="@+id/audioTime"
+                app:layout_constraintVertical_bias="0.137" />
+
+            <ImageView
+                android:id="@+id/audioIcon"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_marginStart="28dp"
+                android:src="@drawable/play"
+                android:background="@drawable/play_button_circle_background"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.000"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/audioTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="1111"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="15sp"
+                android:typeface="monospace"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/audioIcon"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.357" />
+
+            <TextView
+                android:id="@+id/audioClass"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="32dp"
+                android:background="@drawable/green_horizontal_line"
+                android:text="正常"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="15sp"
+                android:typeface="monospace"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/audioDuration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="00:00"
+                android:typeface="monospace"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/audioIcon"
+                app:layout_constraintTop_toBottomOf="@+id/audioTime"
+                app:layout_constraintVertical_bias="0.137" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/sub"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:text="00:00"
-            android:typeface="monospace"
-            android:textSize="12sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/audioDuration"
-            app:layout_constraintTop_toBottomOf="@+id/audioTime"
-            app:layout_constraintVertical_bias="0.137" />
+            android:layout_gravity="center_vertical"
+            android:layout_margin="0dp"
+            android:layout_marginTop="75dp"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@+id/main"
+            android:visibility="gone">
 
-        <ImageView
-            android:id="@+id/audioIcon"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:layout_marginStart="28dp"
-            android:src="@drawable/play"
-            android:background="@drawable/play_button_circle_background"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.000"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            <TextView
+                android:id="@+id/test"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="test"
+                android:textSize="12sp"
+                android:typeface="monospace"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
 
-        <TextView
-            android:id="@+id/audioTime"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="1111"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textSize="15sp"
-            android:typeface="monospace"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/audioIcon"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.357" />
-
-        <TextView
-            android:id="@+id/audioClass"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="32dp"
-            android:background="@drawable/green_horizontal_line"
-            android:text="正常"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textSize="15sp"
-            android:typeface="monospace"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/audioDuration"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="00:00"
-            android:typeface="monospace"
-            android:textSize="12sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/audioIcon"
-            app:layout_constraintTop_toBottomOf="@+id/audioTime"
-            app:layout_constraintVertical_bias="0.137" />
-
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 </com.google.android.material.card.MaterialCardView>
