@@ -117,5 +117,8 @@ enum class MessageType {
     UpdateDuration,
     RecordUri,
     AudioItemLongPressed,
-    NewAudioAdded
+    NewAudioAdded,
+    Pause,
+    Resume,
+    Finish
 }

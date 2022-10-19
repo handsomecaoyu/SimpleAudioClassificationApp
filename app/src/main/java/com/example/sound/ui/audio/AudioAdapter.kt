@@ -22,6 +22,8 @@ import com.example.sound.logic.model.Audio
 import com.example.sound.services.PlayService
 import com.example.sound.ui.fragment.HistoryFragment
 import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 class AudioAdapter(private val fragment: HistoryFragment, private var audioList: MutableList<Audio>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>(){
@@ -71,9 +73,9 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
             } else
                 when (audio.status){
                     FINISHED -> audioIcon.setImageResource(R.drawable.play)
+                    PAUSED -> audioIcon.setImageResource(R.drawable.play)
                     PLAYING -> audioIcon.setImageResource(R.drawable.pause)
                 }
-
 
             // 决定是否展开子项
             if (audio.isExpended) {
@@ -160,10 +162,11 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                 holderTemp.audioIcon.setOnClickListener{
                     val position = holderTemp.layoutPosition
                     val audio = audioList[position]
+                    // 设置下拉事件
                     // 点击播放的时候也会下拉
                     if (!audio.isExpended) {
                         audio.isExpended = true
-                        if (lastExpendedPosition >= 0 && lastExpendedPosition!=holderTemp.layoutPosition)
+                        if (lastExpendedPosition >= 0 && lastExpendedPosition != position)
                             audioList[lastExpendedPosition].isExpended = false
                         // 收起之前的下拉
                         if (lastExpendedPosition >= 0)
@@ -173,22 +176,37 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                         lastExpendedPosition = holderTemp.layoutPosition
                     }
 
+                    // 设置播放事件
                     when (audio.status){
-                        // 播放音频
+                        // 该音频处于停止状态，点击播放音频
                         FINISHED -> {
+                            // 关闭之前播放的音频
+                            if (lastPlayAudioPosition >= 0 && lastPlayAudioPosition != position) {
+                                audioList[lastPlayAudioPosition].status = FINISHED
+                                stopAudio()
+                                notifyItemChanged(lastPlayAudioPosition)
+                            }
                             audio.status = PLAYING
                             holderTemp.audioIcon.setImageResource(R.drawable.pause)
-                            playAudio(holderTemp.layoutPosition)
-                            if (lastPlayAudioPosition >= 0)
+                            playAudio(position)
+                            lastPlayAudioPosition = position
 
                         }
+                        // 该音频正在处于播放状态，点击暂停音频播放
                         PLAYING -> {
-                            audio.status = FINISHED
+                            audio.status = PAUSED
+                            pauseAudio()
                             holderTemp.audioIcon.setImageResource(R.drawable.play)
                         }
-                    }
 
+                        PAUSED -> {
+                            audio.status = PLAYING
+                            resumeAudio()
+                            holderTemp.audioIcon.setImageResource(R.drawable.pause)
+                        }
+                    }
                 }
+
 
                 holder = holderTemp
             }
@@ -199,6 +217,16 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
             }
         }
         return holder
+    }
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        EventBus.getDefault().register(this)
+        super.onAttachedToRecyclerView(recyclerView)
+    }
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        EventBus.getDefault().unregister(this)
+        super.onDetachedFromRecyclerView(recyclerView)
     }
 
     // 绑定
@@ -235,10 +263,40 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
         this.notifyDataSetChanged()
     }
 
+    // 开始播放音乐
     private fun playAudio(position: Int){
         val intent = Intent(MyApplication.context, PlayService::class.java)
         intent.putExtra("uriString", audioList[position].uriString)
         MyApplication.context.startService(intent)
     }
 
+    // 暂停播放
+    private fun pauseAudio() {
+        EventBus.getDefault().post(MessageEvent(MessageType.Pause).put(true))
+    }
+
+    // 继续播放
+    private fun resumeAudio() {
+        EventBus.getDefault().post(MessageEvent(MessageType.Resume).put(true))
+    }
+
+    // 结束播放
+    private fun stopAudio() {
+        val intent = Intent(MyApplication.context, PlayService::class.java)
+        MyApplication.context.stopService(intent)
+    }
+
+    // 完成播放
+    private fun finishPlay() {
+        audioList[lastPlayAudioPosition].status = FINISHED
+        notifyItemChanged(lastPlayAudioPosition)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMessageEvent(event: MessageEvent) {
+        when (event.type) {
+            MessageType.Finish -> finishPlay()
+
+        }
+    }
 }
