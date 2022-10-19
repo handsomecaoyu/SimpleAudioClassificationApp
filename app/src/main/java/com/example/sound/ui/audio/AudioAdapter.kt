@@ -3,6 +3,7 @@ package com.example.sound.ui.audio
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.icu.text.SimpleDateFormat
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,6 +22,11 @@ import com.example.sound.logic.MessageType
 import com.example.sound.logic.model.Audio
 import com.example.sound.services.PlayService
 import com.example.sound.ui.fragment.HistoryFragment
+import com.example.sound.utils.URIPathHelper
+import com.masoudss.lib.WaveformSeekBar
+import linc.com.amplituda.Amplituda
+import linc.com.amplituda.AmplitudaResult
+import linc.com.amplituda.Compress
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -36,6 +42,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
     private var lastExpendedPosition = -1
     // 上一个播放音频的位置
     private var lastPlayAudioPosition = -1
+    val uriPathHelper = URIPathHelper()
 
 
     // 用于显示音频信息
@@ -44,13 +51,14 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
         private val audioDuration: TextView = view.findViewById(R.id.audioDuration)  // 时长
         private val audioDate: TextView = view.findViewById(R.id.audioDate)  // 音频录制的日期
         private val audioClass: TextView = view.findViewById(R.id.audioClass)  // 结果类型
+        val waveBar: WaveformSeekBar = view.findViewById(R.id.waveBar) // 音频波形
         val audioIcon: ImageView = view.findViewById(R.id.audioIcon)
         val subItem: ConstraintLayout = view.findViewById(R.id.sub)
         @SuppressLint("UseCompatLoadingForDrawables", "SimpleDateFormat")
         fun bind(audio: Audio, position: Int) {
             // 在卡片中显示各种信息
             audioTime.text = audio.dateAddedString.split('_')[1]
-            audioDuration.text = audio.duration
+            audioDuration.text = java.text.SimpleDateFormat("mm:ss").format(audio.duration)
             audioDate.text = SimpleDateFormat("YYYY/M/d")
                 .format(audio.dateAddedTimeStamp*1000)
             // 根据不同的情况等级显示不同的颜色
@@ -104,7 +112,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
         val inflater = LayoutInflater.from(parent.context)
         lateinit var view: View
         lateinit var holder: RecyclerView.ViewHolder
-
+        var firstLoadAudio = true
         // 根据不同的viewType选择holder
         when (viewType) {
             AUDIO -> {
@@ -154,6 +162,23 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                         // 将点中的下拉
                         notifyItemChanged(holderTemp.layoutPosition)
                         lastExpendedPosition = holderTemp.layoutPosition
+                        // 波形展示
+                        if (firstLoadAudio) {
+                            println(firstLoadAudio)
+                            val amplituda = Amplituda(MyApplication.context)
+                            val sampleResult = amplituda.processAudio(
+                                uriPathHelper.getPath(MyApplication.context, Uri.parse(audio.uriString)),
+                                Compress.withParams(Compress.AVERAGE, 5)).get()
+                            val samples = sampleResult.amplitudesAsList().toIntArray()
+                            println(samples.size)
+                            println(sampleResult.getAudioDuration(AmplitudaResult.DurationUnit.SECONDS))
+                            println(samples.contentToString())
+                            holderTemp.waveBar.setSampleFrom(samples)
+                            firstLoadAudio = false
+//                            holderTemp.waveBar.maxProgress = (audio.duration / 100).toFloat()
+//                            println(holderTemp.waveBar.maxProgress)
+                        }
+//                        holderTemp.waveBar.progress = 50F
 
                     }
                 }
@@ -199,6 +224,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                             holderTemp.audioIcon.setImageResource(R.drawable.play)
                         }
 
+                        // 该音频处于暂停状态，点击继续播放
                         PAUSED -> {
                             audio.status = PLAYING
                             resumeAudio()
@@ -296,7 +322,6 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
     fun onMessageEvent(event: MessageEvent) {
         when (event.type) {
             MessageType.Finish -> finishPlay()
-
         }
     }
 }

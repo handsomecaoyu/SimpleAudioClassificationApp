@@ -85,7 +85,7 @@ object AudioDao {
                     dateAdd,
                         // 得到的日期时间单位是秒，但是日期转换的时候要乘以1000表示位毫秒
                     SimpleDateFormat("YYYY年M月d日_H点mm分ss秒").format(dateAdd * 1000),
-                    SimpleDateFormat("mm:ss").format(duration),
+                    duration,
                     size))
             }
         }
