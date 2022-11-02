@@ -15,6 +15,7 @@ data class Audio(
     var classResponse: ClassResponse = ClassResponse(),
     var isSelected: Boolean = false,
     var isExpended: Boolean = false,
-    var status: Int = FINISHED
+    var status: Int = FINISHED,
+    var progress: Float = 0f
 )
 

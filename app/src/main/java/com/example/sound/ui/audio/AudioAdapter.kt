@@ -45,7 +45,6 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
     // 上一个播放音频的位置
     private var lastPlayAudioPosition = -1
     private val uriPathHelper = URIPathHelper()
-    private lateinit var globalWaveBar: WaveformSeekBar
 
 
     // 用于显示音频信息
@@ -55,8 +54,9 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
         private val audioDate: TextView = view.findViewById(R.id.audioDate)  // 音频录制的日期
         private val audioClass: TextView = view.findViewById(R.id.audioClass)  // 结果类型
         private val waveBar: WaveformSeekBar = view.findViewById(R.id.waveBar) // 音频波形
-        val audioIcon: ImageView = view.findViewById(R.id.audioIcon)
-        val subItem: ConstraintLayout = view.findViewById(R.id.sub)
+        val audioIcon: ImageView = view.findViewById(R.id.audioIcon)  // 音频的图标
+        private val subItem: ConstraintLayout = view.findViewById(R.id.sub)  // 下拉子项
+
         @SuppressLint("UseCompatLoadingForDrawables", "SimpleDateFormat")
         fun bind(audio: Audio, position: Int) {
             // 在卡片中显示各种信息
@@ -81,12 +81,13 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
             // 但这段确实起作用的，
             if (audio.isSelected) {
                 audioIcon.setImageResource(R.drawable.selected)
-            } else
+            } else{
                 when (audio.status){
                     FINISHED -> audioIcon.setImageResource(R.drawable.play)
                     PAUSED -> audioIcon.setImageResource(R.drawable.play)
                     PLAYING -> audioIcon.setImageResource(R.drawable.pause)
                 }
+            }
 
             // 决定是否展开子项
             if (audio.isExpended) {
@@ -96,7 +97,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                     visibleProgress = 0F
                     uriPathHelper.getPath(MyApplication.context, Uri.parse(audio.uriString))
                         ?.let { it1 -> setSampleFrom(it1) }
-                    progress = 0f
+                    progress = audio.progress
                     onProgressChanged = object : SeekBarOnProgressChanged {
                         override fun onProgressChanged(
                             waveformSeekBar: WaveformSeekBar,
@@ -133,7 +134,6 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
         val inflater = LayoutInflater.from(parent.context)
         lateinit var view: View
         lateinit var holder: RecyclerView.ViewHolder
-        var firstLoadAudio = true
         // 根据不同的viewType选择holder
         when (viewType) {
             AUDIO -> {
@@ -183,8 +183,6 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                         // 将点中的下拉
                         notifyItemChanged(holderTemp.layoutPosition)
                         lastExpendedPosition = holderTemp.layoutPosition
-
-
                     }
                 }
 
@@ -237,7 +235,6 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                         }
                     }
                 }
-
 
                 holder = holderTemp
             }
@@ -320,6 +317,8 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
     // 完成播放
     private fun finishPlay() {
         audioList[lastPlayAudioPosition].status = FINISHED
+//        val intent = Intent(MyApplication.context, PlayService::class.java)
+//        MyApplication.context.stopService(intent)
         notifyItemChanged(lastPlayAudioPosition)
     }
 
@@ -327,8 +326,10 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
     fun onMessageEvent(event: MessageEvent) {
         when (event.type) {
             MessageType.Finish -> finishPlay()
-            // MessageType.UpdateProgress -> println(event.getInt().toFloat())
-
+            MessageType.UpdateProgress -> {
+                audioList[lastPlayAudioPosition].progress = event.getInt().toFloat()
+                notifyItemChanged(lastPlayAudioPosition)
+            }
         }
     }
 }

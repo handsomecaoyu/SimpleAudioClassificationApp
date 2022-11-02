@@ -47,10 +47,11 @@ class PlayService: Service(), MediaPlayer.OnPreparedListener {
             override fun run() {
                 var duration = mMediaPlayer?.duration
                 var currentProgress = mMediaPlayer?.currentPosition
+
                 if (currentProgress != null && duration != null) {
                     EventBus.getDefault()
                         .post(MessageEvent(MessageType.UpdateProgress)
-                            .put(currentProgress / duration * 100))
+                            .put(currentProgress * 100 / duration))
                 }
             }
         }, 0, 50)
@@ -72,7 +73,7 @@ class PlayService: Service(), MediaPlayer.OnPreparedListener {
             setDataSource(MyApplication.context, uri)
             setOnCompletionListener {
                 EventBus.getDefault().post(MessageEvent(MessageType.Finish).put(true))
-                stopPlay()
+                stopSelf()
             }
             // 异步准备
             setOnPreparedListener(this@PlayService)
@@ -89,12 +90,14 @@ class PlayService: Service(), MediaPlayer.OnPreparedListener {
     }
 
     private fun stopPlay(){
+        progressTimer.cancel()
         mMediaPlayer?.apply {
             stop()
             reset()
             release()
         }
         mMediaPlayer = null
+
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
