@@ -19,13 +19,18 @@ class PlayService: Service(), MediaPlayer.OnPreparedListener {
 
     private var mMediaPlayer: MediaPlayer? = null
 
+    override fun onCreate() {
+        // 注册EventBus，这是一个事件总线，用于不同组件之间方便通信
+        EventBus.getDefault().register(this)
+        super.onCreate()
+    }
+
     override fun onBind(intent: Intent): IBinder {
         TODO("Return the communication channel to the service.")
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        // 注册EventBus，这是一个事件总线，用于不同组件之间方便通信
-        EventBus.getDefault().register(this)
+
         val uriString = intent.getStringExtra("uriString")
         val uri = Uri.parse(uriString)
         startPlay(uri)
