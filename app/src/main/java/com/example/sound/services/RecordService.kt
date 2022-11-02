@@ -85,7 +85,7 @@ class RecordService : Service() {
             override fun run() {
                 var currentMaxAmplitude = recorder?.maxAmplitude
                 if (currentMaxAmplitude!=null) {
-                    EventBus.getDefault().post(MessageEvent(MessageType.UpdatemaxAmplitude).put(currentMaxAmplitude))
+                    EventBus.getDefault().post(MessageEvent(MessageType.UpdateMaxAmplitude).put(currentMaxAmplitude))
                 }
             }
         }, 0, 50)

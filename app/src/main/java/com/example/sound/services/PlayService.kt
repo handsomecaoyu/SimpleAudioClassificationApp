@@ -13,11 +13,13 @@ import com.example.sound.logic.MessageType
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.util.*
 
 
 class PlayService: Service(), MediaPlayer.OnPreparedListener {
 
     private var mMediaPlayer: MediaPlayer? = null
+    private var progressTimer = Timer() // 当前的播放进度定时器
 
     override fun onCreate() {
         // 注册EventBus，这是一个事件总线，用于不同组件之间方便通信
@@ -40,7 +42,18 @@ class PlayService: Service(), MediaPlayer.OnPreparedListener {
 
     override fun onPrepared(mediaPlayer: MediaPlayer) {
         mediaPlayer.start()
-        println("play")
+        // 录音界面的波形相关
+        progressTimer.schedule(object : TimerTask() {
+            override fun run() {
+                var duration = mMediaPlayer?.duration
+                var currentProgress = mMediaPlayer?.currentPosition
+                if (currentProgress != null && duration != null) {
+                    EventBus.getDefault()
+                        .post(MessageEvent(MessageType.UpdateProgress)
+                            .put(currentProgress / duration * 100))
+                }
+            }
+        }, 0, 50)
     }
 
     override fun onDestroy() {
@@ -68,17 +81,14 @@ class PlayService: Service(), MediaPlayer.OnPreparedListener {
     }
 
     private fun pausePlay() {
-        println("pause")
         mMediaPlayer?.pause()
     }
 
     private fun resumePlay() {
-        println("resume")
         mMediaPlayer?.start()
     }
 
     private fun stopPlay(){
-        println("stop")
         mMediaPlayer?.apply {
             stop()
             reset()

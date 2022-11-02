@@ -243,7 +243,7 @@ class HomeFragment : Fragment() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageEvent(event: MessageEvent) {
         when (event.type) {
-            MessageType.UpdatemaxAmplitude -> binding.audioRecordView.update(event.getInt())
+            MessageType.UpdateMaxAmplitude -> binding.audioRecordView.update(event.getInt())
             MessageType.UpdateDuration -> updateDuration(event.getInt())
             // MessageType.RecordUri -> recordingPath = event.getString()
             MessageType.RecordUri -> recordingUriString = event.getString()

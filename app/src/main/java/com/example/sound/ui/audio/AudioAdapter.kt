@@ -23,6 +23,7 @@ import com.example.sound.logic.model.Audio
 import com.example.sound.services.PlayService
 import com.example.sound.ui.fragment.HistoryFragment
 import com.example.sound.utils.URIPathHelper
+import com.masoudss.lib.SeekBarOnProgressChanged
 import com.masoudss.lib.WaveformSeekBar
 import linc.com.amplituda.Amplituda
 import linc.com.amplituda.AmplitudaResult
@@ -30,6 +31,7 @@ import linc.com.amplituda.Compress
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.util.*
 
 class AudioAdapter(private val fragment: HistoryFragment, private var audioList: MutableList<Audio>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>(){
@@ -42,7 +44,8 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
     private var lastExpendedPosition = -1
     // 上一个播放音频的位置
     private var lastPlayAudioPosition = -1
-    val uriPathHelper = URIPathHelper()
+    private val uriPathHelper = URIPathHelper()
+    private lateinit var globalWaveBar: WaveformSeekBar
 
 
     // 用于显示音频信息
@@ -51,7 +54,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
         private val audioDuration: TextView = view.findViewById(R.id.audioDuration)  // 时长
         private val audioDate: TextView = view.findViewById(R.id.audioDate)  // 音频录制的日期
         private val audioClass: TextView = view.findViewById(R.id.audioClass)  // 结果类型
-        val waveBar: WaveformSeekBar = view.findViewById(R.id.waveBar) // 音频波形
+        private val waveBar: WaveformSeekBar = view.findViewById(R.id.waveBar) // 音频波形
         val audioIcon: ImageView = view.findViewById(R.id.audioIcon)
         val subItem: ConstraintLayout = view.findViewById(R.id.sub)
         @SuppressLint("UseCompatLoadingForDrawables", "SimpleDateFormat")
@@ -88,6 +91,24 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
             // 决定是否展开子项
             if (audio.isExpended) {
                 subItem.visibility = View.VISIBLE
+                // 显示波形
+                waveBar.apply {
+                    visibleProgress = 0F
+                    uriPathHelper.getPath(MyApplication.context, Uri.parse(audio.uriString))
+                        ?.let { it1 -> setSampleFrom(it1) }
+                    progress = 0f
+                    onProgressChanged = object : SeekBarOnProgressChanged {
+                        override fun onProgressChanged(
+                            waveformSeekBar: WaveformSeekBar,
+                            progress: Float,
+                            fromUser: Boolean
+                        ) {
+                            if (fromUser)
+                                println(progress)
+                        }
+                    }
+                }
+
             } else {
                 subItem.visibility = View.GONE
             }
@@ -137,7 +158,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                 holderTemp.itemView.setOnClickListener {
                     val position = holderTemp.layoutPosition
                     val audio = audioList[position]
-                    // 在多选模式下
+                    // 在多选模式下，点击来进行选择
                     if (isMultiSelecting){
                         // 如果已经选中，取消选中
                         if (audio.isSelected) {
@@ -162,23 +183,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                         // 将点中的下拉
                         notifyItemChanged(holderTemp.layoutPosition)
                         lastExpendedPosition = holderTemp.layoutPosition
-                        // 波形展示
-                        if (firstLoadAudio) {
-                            println(firstLoadAudio)
-                            val amplituda = Amplituda(MyApplication.context)
-                            val sampleResult = amplituda.processAudio(
-                                uriPathHelper.getPath(MyApplication.context, Uri.parse(audio.uriString)),
-                                Compress.withParams(Compress.AVERAGE, 5)).get()
-                            val samples = sampleResult.amplitudesAsList().toIntArray()
-                            println(samples.size)
-                            println(sampleResult.getAudioDuration(AmplitudaResult.DurationUnit.SECONDS))
-                            println(samples.contentToString())
-                            holderTemp.waveBar.setSampleFrom(samples)
-                            firstLoadAudio = false
-//                            holderTemp.waveBar.maxProgress = (audio.duration / 100).toFloat()
-//                            println(holderTemp.waveBar.maxProgress)
-                        }
-//                        holderTemp.waveBar.progress = 50F
+
 
                     }
                 }
@@ -322,6 +327,8 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
     fun onMessageEvent(event: MessageEvent) {
         when (event.type) {
             MessageType.Finish -> finishPlay()
+            // MessageType.UpdateProgress -> println(event.getInt().toFloat())
+
         }
     }
 }

@@ -113,12 +113,13 @@ data class MessageEvent(var type: MessageType) {
 }
 
 enum class MessageType {
-    UpdatemaxAmplitude,
+    UpdateMaxAmplitude,
     UpdateDuration,
     RecordUri,
     AudioItemLongPressed,
     NewAudioAdded,
     Pause,
     Resume,
-    Finish
+    Finish,
+    UpdateProgress
 }
