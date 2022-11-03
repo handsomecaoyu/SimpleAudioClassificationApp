@@ -53,7 +53,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
         private val audioDuration: TextView = view.findViewById(R.id.audioDuration)  // 时长
         private val audioDate: TextView = view.findViewById(R.id.audioDate)  // 音频录制的日期
         private val audioClass: TextView = view.findViewById(R.id.audioClass)  // 结果类型
-        private val waveBar: WaveformSeekBar = view.findViewById(R.id.waveBar) // 音频波形
+        val waveBar: WaveformSeekBar = view.findViewById(R.id.waveBar) // 音频波形
         val audioIcon: ImageView = view.findViewById(R.id.audioIcon)  // 音频的图标
         private val subItem: ConstraintLayout = view.findViewById(R.id.sub)  // 下拉子项
 
@@ -91,6 +91,8 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
 
             // 决定是否展开子项
             if (audio.isExpended) {
+                println("expand")
+                println(audio.id)
                 subItem.visibility = View.VISIBLE
                 // 显示波形
                 waveBar.apply {
@@ -104,8 +106,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                             progress: Float,
                             fromUser: Boolean
                         ) {
-                            if (fromUser)
-                                println(progress)
+
                         }
                     }
                 }
@@ -175,14 +176,14 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                     }
                     else {
                         audio.isExpended = !audio.isExpended
-                        if (lastExpendedPosition >= 0 && lastExpendedPosition!=holderTemp.layoutPosition)
+                        if (lastExpendedPosition >= 0 && lastExpendedPosition != position)
                             audioList[lastExpendedPosition].isExpended = false
                         // 收起之前的下拉
                         if (lastExpendedPosition >= 0)
                             notifyItemChanged(lastExpendedPosition)
                         // 将点中的下拉
-                        notifyItemChanged(holderTemp.layoutPosition)
-                        lastExpendedPosition = holderTemp.layoutPosition
+                        notifyItemChanged(position)
+                        lastExpendedPosition = position
                     }
                 }
 
@@ -200,8 +201,8 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
                         if (lastExpendedPosition >= 0)
                             notifyItemChanged(lastExpendedPosition)
                         // 将点中的下拉
-                        notifyItemChanged(holderTemp.layoutPosition)
-                        lastExpendedPosition = holderTemp.layoutPosition
+                        notifyItemChanged(position)
+                        lastExpendedPosition = position
                     }
 
                     // 设置播放事件
@@ -258,6 +259,28 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
     }
 
     // 绑定
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+        payloads: MutableList<Any>
+    ) {
+        val audio = audioList[position]
+        if (payloads.isEmpty()){
+            when (audio.itemType) {
+                AUDIO -> (holder as AudioViewHolder).bind(audio, position)
+                DATE_ADDED -> (holder as DateViewHolder).bind(audio, position)
+            }
+        } else {
+            // 用于实现局部刷新
+            for (type in payloads){
+                when (type) {
+                    0 -> (holder as AudioViewHolder).waveBar.progress = audio.progress
+                }
+            }
+        }
+
+    }
+
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val audio = audioList[position]
         when (audio.itemType) {
@@ -328,7 +351,7 @@ class AudioAdapter(private val fragment: HistoryFragment, private var audioList:
             MessageType.Finish -> finishPlay()
             MessageType.UpdateProgress -> {
                 audioList[lastPlayAudioPosition].progress = event.getInt().toFloat()
-                notifyItemChanged(lastPlayAudioPosition)
+                notifyItemChanged(lastPlayAudioPosition, 0)
             }
         }
     }

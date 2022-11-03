@@ -54,7 +54,7 @@ class PlayService: Service(), MediaPlayer.OnPreparedListener {
                             .put(currentProgress * 100 / duration))
                 }
             }
-        }, 0, 50)
+        }, 0, 200)
     }
 
     override fun onDestroy() {
